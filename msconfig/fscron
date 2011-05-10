@@ -1,0 +1,24 @@
+#! /bin/bash
+
+###
+###  This is the script invoked by cron every 5 minutes;
+###  it simply runs fileprocessor and then makmap.
+###
+
+#./fileprocessor
+
+./makemap
+#./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 efetac_nasa_percent_change_cmap.csv legendicons/efetac_nasa.png
+#./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 rsac_fhtet_percent_change_cmap.csv legendicons/rsac_fhtet.png
+
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_current' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_current.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_previous1' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_previous1.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_previous2' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_previous2.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_current' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_current.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_previous1' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_previous1.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_previous2' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_previous2.png
+
+./makecmap -q efetac_nasa_percent_change_cmap.csv efetac_nasa_percent_change_cmap.cmap
+./makecmap -q rsac_fhtet_percent_change_cmap.csv rsac_fhtet_percent_change_cmap.cmap
+cp efetac_nasa_percent_change_cmap.csv ../html
+cp rsac_fhtet_percent_change_cmap.csv ../html

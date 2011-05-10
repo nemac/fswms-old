@@ -1,0 +1,281 @@
+MAP
+    # the following two lines tell MapServer to write debugging output to a log file.  Remove the '#' from the beginning
+    # of the two lines below to enable this logging:
+    #CONFIG "MS_ERRORFILE" "%(MS_ERRORFILE)s"
+    #DEBUG 5
+
+    # all temp files get prefixed with this string
+    NAME %(TEMP_FILE_PREFIX)s
+
+    # background color of image if transparency
+    # is not requested
+    IMAGECOLOR 255 255 255
+
+    # default output image dimensions
+    SIZE 600 400
+
+    # always returns a map
+    STATUS ON
+
+    # set top level projection
+    PROJECTION
+     "init=epsg:%(EPSG)s"
+    END
+
+    # image format options
+    OUTPUTFORMAT
+     NAME png
+     DRIVER "GD/PNG"
+     MIMETYPE "image/png"
+     IMAGEMODE RGB
+#     IMAGEMODE RGBA
+#     TRANSPARENT ON
+     EXTENSION "png"
+    END
+
+#    OUTPUTFORMAT
+#     NAME GEOTIFF_RGB
+#     DRIVER "GDAL/GTiff"
+#     MIMETYPE "image/tiff"
+#     IMAGEMODE RGBA
+#     EXTENSION "tif"
+#    END
+
+    # minx miny maxx maxy
+    # sets:
+    # /WMT_MS_Capabilities/Capability/Layer/LatLonBoundingBox(@minx @miny @maxx @maxx)
+    EXTENT -180 -90 180 90 # World
+
+    # add def pointers for symbols
+    SYMBOLSET "./symbols/symbols35.sym"
+    FONTSET   "./fonts/fonts.list"
+
+    #
+    # Start of web interface definition
+    WEB
+
+        # this is the real filepath to the temp dir for intermediate file creation
+        IMAGEPATH "./tmp"
+
+        # this is the web-accessible path to IMAGEPATH
+        IMAGEURL "/tmp/"
+
+        HEADER "./templates/query_header.html"
+        FOOTER "./templates/query_footer.html"
+
+        METADATA
+            "map" "%(MAPFILE)s"
+
+            # generic OWS specific info
+            # sets base URL for OGC Schemas so the root element in the
+            # Capabilities document points to the correct schema location
+            # to produce valid XML
+            "ows_schemas_location" "http://schemas.opengis.net"
+
+            # unified OWS tags
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/Title
+            # /WMT_MS_Capabilities/Capability/Layer/Title
+            # /WFS_Capabilities/Service/Title
+            "ows_title" "%(OWS_TITLE)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/Abstract
+            # /WFS_Capabilities/Service/Abstract
+            "ows_abstract" "%(OWS_ABSTRACT)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/KeywordList/Keyword[]
+            # /WFS_Capabilities/Service/Keywords   
+            # /WCS_Capabilities/Service/keywords/keyword[]
+            "ows_keywordlist" "%(OWS_KEYWORDLIST)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/OnlineResource
+            # /WFS_Capabilities/Service/OnlineResource
+            # /WCS_Capabilities/Service/responsibleParty/onlineResource/@xlink:href
+            "ows_service_onlineresource" "%(SERVICE_URL)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetMap/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetMap/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetFeatureInfo/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetFeatureInfo/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/DescribeLayer/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/DescribeLayer/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetLegendGraphic/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WMT_MS_Capabilities/Capability/Request/GetLegendGraphic/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WMS_DescribeLayerResponse/LayerDescription/@wfs is WFS is enabled
+            # /WFS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WFS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WFS_Capabilities/Capability/Request/DescribeFeatureType/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WFS_Capabilities/Capability/Request/DescribeFeatureType/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WFS_Capabilities/Capability/Request/GetFeature/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WFS_Capabilities/Capability/Request/GetFeature/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/GetCapabilities/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/DescribeFeatureType/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/DescribeFeatureType/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/GetFeature/DCPType/HTTP/Get/OnlineResource/@xlink:href
+            # /WCS_Capabilities/Capability/Request/GetFeature/DCPType/HTTP/Post/OnlineResource/@xlink:href
+            "ows_onlineresource" "%(SERVICE_URL)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/Fees
+            # /WFS_Capabilities/Service/Fees
+            # /WCS_Capabilities/Service/fees
+            "ows_fees" "none"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/AccessConstraints
+            # /WFS_Capabilities/Service/AccessConstraints
+            # /WCS_Capabilities/Service/accessConstraints   
+            "ows_accessconstraints" "none"
+
+            # OGC:WMS specific tags
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactPersonPrimary/ContactPerson
+            # /WCS_Capabilities/Service/responsibleParty/individualName
+            "ows_contactperson" "Jeff Hicks"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactPersonPrimary/ContactOrganization
+            # /WCS_Capabilities/Service/responsibleParty/organisationName   
+            "ows_contactorganization" "UNC Asheville National Environmental Modeling and Analysis Centerr"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactPosition
+            # /WCS_Capabilities/Service/responsibleParty/positionName   
+            "ows_contactposition" "OGC WMS Guru"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/AddressType
+            "ows_addresstype" "postal"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/Address
+            # /WCS_Capabilities/Service/contactInfo/address/deliveryPoint 
+            "ows_address"     "246 Robinson Hall CPO 2345, UNCA Asheville, One University Heights"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/City
+            # /WCS_Capabilities/Service/contactInfo/address/city   
+            "ows_city" "Asheville"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/StateOrProvince
+            # /WCS_Capabilities/Service/contactInfo/address/administrativeArea   
+            "ows_stateorprovince" "NC"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/PostCode
+            # /WCS_Capabilities/Service/contactInfo/address/postalCode   
+            "ows_postcode" "28804"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactAddress/Country
+            # /WCS_Capabilities/Service/contactInfo/address/country   
+            "ows_country" "USA"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactVoiceTelephone
+            # /WCS_Capabilities/Service/contactInfo/phone/voice
+            "ows_contactvoicetelephone" "828-258-7660"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactFacsimileTelephone
+            # /WCS_Capabilities/Service/contactInfo/phone/facsimile   
+            "ows_contactfacsimiletelephone" "828-258-7660"
+
+            # sets:
+            # /WMT_MS_Capabilities/Service/ContactInformation/ContactElectronicMailAddress
+            # /WCS_Capabilities/Service/contactInfo/address/eletronicMailAddress
+            "ows_contactelectronicmailaddress" "jhicks@unca.edu"
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Layer/SRS
+            # /WMT_MS_Capabilities/Capability/Layer/Layer[*]/SRS
+            # /WFS_Capabilities/FeatureTypeList/FeatureType[*]/SRS
+            # unless differently defined in LAYER object
+            # if you are setting > 1 SRS for WMS, you need to define "wms_srs" and "wfs_srs"
+            # seperately because OGC:WFS only accepts one OUTPUT SRS
+            "ows_srs" "EPSG:%(EPSG)s"	
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/OnlineResource/@xlink:href
+            "wms_attribution_onlineresource" "http://www.ec.gc.ca/"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/Title   
+            "wms_attribution_title" "Data from Environment Canada"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/LogoURL/@width
+            "wms_attribution_logourl_width" "655"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/LogoURL/@height
+            "wms_attribution_logourl_height" "130"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/LogoURL/Format   
+            "wms_attribution_logourl_format" "image/png"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/Attribution/LogoURL/OnlineResource/@xlink:href
+            "wms_attribution_logourl_href" "http://mapserver.gis.umn.edu/mum/header_fsa.png"
+
+            # we support GetFeatureInfo text/html queries
+            # you NEED query headers, footers, and body templates
+            "wms_feature_info_mime_type"  "text/html"
+
+            # sets namespace URI when performing a DescribeFeatureType or GetFeature
+            # in the root element of the XML response
+            "wfs_namespace_uri" "%(SERVICE_URL)s"
+
+            # sets the XML namespace prefix to be used when defining types for data
+            # in this mapfile
+            "wfs_namespace_prefix" "%(WFS_NAMESPACE_PREFIX)s"
+
+            # OGC:WCS
+
+            # sets:
+            # /WCS_Capabilities/Service/label
+            "wcs_label" "VALUE_OF_wcs_label"
+
+            # sets:
+            # /WCS_Capabilities/Service/description
+            "wcs_description" "VALUE_OF_wcs_description"
+
+            # sets:
+            # /WCS_Capabilities/Service/metadataLink/@xlink:href
+            "wcs_metadatalink_href" "VALUE_OF_wcs_metadatalink_href"
+        END
+
+    END
+
+    ###  # hilite map for GetFeatureInfo "info_format=text/html"
+    ###  # requests
+    ###  QUERYMAP
+    ###   STATUS ON
+    ###   SIZE 200 200
+    ###   STYLE HILITE
+    ###   COLOR 255 255 0
+    ###  END
+
+    QUERYMAP
+        STATUS OFF
+    END
+
+    # set defaults for GetLegendGraphic requests 
+    LEGEND
+      KEYSIZE 137 55
+#       LABEL
+#         TYPE BITMAP
+#         SIZE MEDIUM
+#         COLOR 0 0 0
+#     END
+    END
+
+
+%(LAYERS)s
+
+END # end MAP

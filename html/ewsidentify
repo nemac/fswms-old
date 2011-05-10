@@ -1,0 +1,107 @@
+#! /usr/bin/python
+
+### 
+### This cgi script takes 3 arguments:
+###    lon : longitude of a point (WGS84)
+###    lat : latitude of a point  (WGS84)
+###    layer : the NAME of a layer from the "ews.map" file
+### It returns an XML expression giving the pixel value of that layer at that point.
+### 
+### You can test this script from the command line by typing something like:
+### 
+###     ./ewsidentify 'lon=-128.78&lat=49.69&layer=EFETAC-NASA_current'
+### 
+### from this directory.  Or, you can test it from a browser by entering a URL like this:
+### 
+###     http://fswms.nemac.org/ewsidentify?lon=-128.78&lat=49.69&layer=EFETAC-NASA_current
+### 
+### You can also test it using 'wget' from the linux command line, as in:
+### 
+###     wget -q -O - 'http://fswms.nemac.org/ewsidentify?lon=-128.78&lat=49.69&layer=EFETAC-NASA_current'
+### 
+### These three ways of testing are all equivalent to each other,
+### except that the first one (the one where you type "./ewsidentify")
+### bypasses the Apache web server.  In that case, you're just running
+### the program manually, rather than accessing it through Apache.
+### 
+### IMPORTANT NOTE: in order for a script such as this one to be
+### available to Apache as a CGI script, there must be a "<Files...>"
+### section for it in the ".htaccess" file in this directory.  That
+### has already been done for this "ewsidentify" script, but if you make
+### a copy of this script in order to edit it, you'll need to add a
+### "<Files...>" section to ".htaccess" for your copy.
+
+import sys, struct, cgi
+from osgeo import gdal, osr
+
+sys.path.append("../lib")
+from Mapfile import Mapfile
+
+def coords_to_pixel(X,Y,g):
+    det = g[1]*g[5] - g[2]*g[4]
+    X = X - g[0]
+    Y = Y - g[3]
+    x = ( g[5] * X - g[2] * Y) / det
+    y = (-g[4] * X + g[1] * Y) / det
+    return [int(x),int(y)]
+
+def pixel_to_coords(x,y,g):
+	X = g[0] + x*g[1] + y*g[2]
+	Y = g[3] + x*g[4] + y*g[5]
+	return [X,Y]
+
+params = cgi.FieldStorage()
+lon    = float(params['lon'].value)
+lat    = float(params['lat'].value)
+layer  = params['layer'].value
+
+mapfilename = "../msconfig/ews.map"
+
+mapfile = Mapfile(mapfilename)
+tiffile = mapfile.findLayerData(layer)
+
+dataset = gdal.Open(tiffile, gdal.GA_ReadOnly)
+g = dataset.GetGeoTransform()
+
+p = dataset.GetProjection()
+srs = osr.SpatialReference(p)
+
+wgs84 = osr.SpatialReference()
+wgs84.ImportFromEPSG(4326)
+
+fromLatLongCT = osr.CoordinateTransformation(wgs84,srs)
+[Xgeo,Ygeo,ztrashem] = fromLatLongCT.TransformPoint(lon,lat)
+[Xpixel,Ypixel] = coords_to_pixel(Xgeo,Ygeo,g)
+
+band = dataset.GetRasterBand(1)
+
+value = band.ReadRaster( Xpixel, Ypixel, 1, 1, 1, 1, gdal.GDT_Float32)
+
+tuple = struct.unpack('f'*1, value)
+answer = tuple[0]
+
+print "Content-type: text/xml\n"
+print "<value>%f</value>" % (answer)
+
+
+#def returnAnswer():
+#	if answer == NULL:
+#		ret =  "<value>nodata</value>"
+#	else:
+#		ret =  "<value>%f</value>" % (answer)
+#	return ret
+
+#returnAnswer()
+
+#Questions:
+#Can Todd give lat lon? If not, can give WebMercator? - Create new coordinate transformation.
+#What does he want returned?
+
+#TODO: 
+# [DONE by mark] Convert to cgi. Params: lon, lat, layer name, mapfile name
+#    Note I [mark] decided to hardcode the mapfile name into the script, for now anyway, because passing it in
+#    as a parameter is somewhat of a security issue; I'll explain this later.  So, the only 3 parameters are lon, lat, and layer name.
+# [DONE by mark] Use Mapfile.py to look up layer tif file from layer name
+#    Note: I [mark] put Mapfile.py in the "../lib" directory, rather than here in this directory, because we don't want to allow
+#    web users to download Mapfile.py (which would be possible if it were located here in the "html" directory).
+# Still to do by Jeff, in communication with Todd: Convert output to more meaningful XML

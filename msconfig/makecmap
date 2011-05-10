@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+
+import sys, getopt
+from ColorMap import *
+
+def usage():
+    print """NAME
+    makecmap - generate a MapServer color map file
+
+SYNOPSIS
+    makecmap COLORMAP_FILE OUTPUT_FILE
+
+DESCRIPTION
+    Makecmap reads a color map from COLORMAP_FILE and writes an OUTPUT_FILE
+    containing the color map, suitable for inclusion in MapServer mapfiles.
+
+    COLORMAP_FILE should be a CSV file containing a color map.  Each line
+    in the file should contain 4 numbers separated by commas.  The first
+    number is a pixel value, and the remaining 3 numbers are the red,
+    green, and blue components of the color.  The numbers (both pixel and
+    color values) should be in the range 0-255.  Lines starting with '#'
+    are consider comments and are ignored.  Non-comment lines should
+    appear sorted in increasing order of pixel values.
+
+    OUTPUT_FILE will consist of a series of groups of lines looking like
+        CLASS
+          EXPRESSION <VALUE>
+          COLOR      <R> <G> <B>
+        END
+    where <VALUE> is the pixel value from a line in the input file,
+    and <R>,<G>,<B> are the red, green, blue values from that line.
+    There will be one group like the above for each (non-comment) line
+    in the input file.  This file is suitable for being included
+    in a LAYER object for a raster layer in a MapServer mapfile.
+
+EXAMPLE
+    ./makecmap efetac_nasa_percent_change_cmap.csv efetac_nasa_percent_change_cmap.map
+
+AUTHOR
+    Mark Phillips
+    mphillip@unca.edu
+    Fri Sep 17 16:28:29 2010
+"""
+    sys.exit(-1)
+
+###
+### Default values:
+###
+quietMode    = False
+
+###                                                                                                                                
+### Process command line arguments and filenames                                                                                   
+###                                                                                                                                
+opts, args = getopt.getopt(sys.argv[1:],
+                           "q",
+                           ["quiet"]
+                           )
+if (len(args) != 2): usage()
+inputFile  = args[0]
+outputFile = args[1]
+for opt, arg in opts:
+    if opt in ('-q', '--quiet'):
+        quietMode = True
+
+###
+### Load the color map from the input file
+###
+colorMap = ColorMap(inputFile)
+
+###
+### write the output file
+###
+f=open(outputFile,"w")
+for color in colorMap.colors:
+    f.write("CLASS\n")
+    f.write("  EXPRESSION \"%1d\"\n" % color.i)
+    f.write("  COLOR      %3d %3d %3d\n" % (color.r, color.g, color.b))
+    f.write("END\n")
+f.close()
+if not quietMode: print "wrote file %s" % (outputFile)

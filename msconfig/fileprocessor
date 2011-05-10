@@ -1,0 +1,71 @@
+#! /usr/bin/python
+
+import os,subprocess,re,shutil;
+from datetime import datetime, date, timedelta;
+
+try:
+    from Config import *
+except:
+    print "Cannot find local settings file 'Config.py'.  You need to create a Config.py file that contains"
+    print "settings appropriate for this copy of the FSWMS project.  You can use the file 'Config.py.template'"
+    print "as a starting point --- make a copy of that file called 'Config.py', and edit appropriately."
+    exit(-1)
+
+txx_filename_pattern = '(' + DATA_DIR + r'/.+/.+/)(\d+)_(\d+)\.(t[a-z][a-z])$'
+
+timeprefixes = ['current','previous1','previous2']
+
+def rfind(dir, pattern):
+    return subprocess.Popen(['find', dir, '-name', pattern, '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
+
+def currentTifs(dir):
+    tifs = []
+    for line in rfind(dir, '*.tif'):
+        if (len(line) > 0) and (re.search(txx_filename_pattern, line) != None):
+            tifs.append(line)
+    tifs.sort()
+    current = [tifs[-1], tifs[-2], tifs[-3]]
+    return current
+
+def copyFile(i, file, destdir):
+    destname = compute_stupid_filename(i, file)
+    destpath = destdir + "/" + destname
+    if os.path.exists(destpath):
+        os.remove(destpath)
+    os.symlink(file, destpath)
+
+def compute_stupid_filename(i, smart_filename):
+    m = re.search(txx_filename_pattern, smart_filename)
+    prefix = m.group(1)
+    yyyymmdd = m.group(2)
+    pp = int(m.group(3))
+    suffix = m.group(4)
+
+    end = datetime.strptime(yyyymmdd,"%Y%m%d")
+    endy = int(end.strftime("%Y"))
+    endm = int(end.strftime("%m"))
+    endd = int(end.strftime("%d"))
+    enddate = date(endy, endm, endd)
+    delta = timedelta(days=pp-1)
+    start = enddate - delta
+    stupidend = end.strftime("%B").lower() + ("%1d" % (int(end.strftime("%d"))))
+    stupidstart = start.strftime("%B").lower() + ("%1d" % (int(start.strftime("%d"))))
+    endform = "%s_%s.%s" % (stupidstart, stupidend, suffix)
+
+    return timeprefixes[i] + "_" + endform
+
+def do_link_group(group_link_dir, group_data_dir):
+    os.system("/bin/rm -f %s/*" % group_link_dir);
+    if not os.path.exists(group_link_dir):
+        os.mkdir(group_link_dir)
+    tifs = currentTifs(group_data_dir)
+    for i in range(0,len(tifs)):
+        copyFile(i, tifs[i], group_link_dir)
+        tfw = re.sub(r'\.tif$', '.tfw', tifs[i])
+        copyFile(i, tfw, group_link_dir)
+
+if not os.path.exists(LINK_TARGET_DIR):
+    os.mkdir(LINK_TARGET_DIR)
+
+do_link_group("%s/rsac_fhtet" % LINK_TARGET_DIR,  "%s/rsac_fhtet/ews" % DATA_DIR)
+do_link_group("%s/efetac_nasa" % LINK_TARGET_DIR,  "%s/efetac_nasa/ews" % DATA_DIR)

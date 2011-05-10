@@ -1,0 +1,107 @@
+    LAYER
+        # name of layer
+        # sets:
+        # /WMT_MS_Capabilities/Capability/Layer/*/Name
+        # /WFS_Capabilities/FeatureTypeList/FeatureType[*]/Name
+        NAME %(NAME)s
+
+        # group layer belongs to
+        # this is used to add an extra <Layer> nest
+        # to the output Capabilities XML
+        GROUP %(GROUP)s
+
+        # projection: if the data is NOT in the same projection as the global
+        # mapfile, you must explicitly give the native projection code of the data
+        # some common projections:
+        # lat/long: epsg:4326
+        # NRCan LCC: epsg:42304
+        PROJECTION
+%(PROJ)s
+        END
+
+        # what type of data is this?
+        TYPE RASTER
+
+        # allow data access via query and WCS
+        DUMP TRUE
+  
+        # off by default
+        STATUS OFF
+
+        # actual data pointer
+        DATA %(DATA)s
+
+        # for HTML queries
+        HEADER   ./templates/layer_query_header.html
+        TEMPLATE ./templates/layer_query_body.html
+
+        CLASS
+          NAME       ''
+          KEYIMAGE   '%(KEYIMAGE)s'
+          EXPRESSION "-1"
+          COLOR      0     0       0
+        END
+
+        INCLUDE "%(COLORMAPFILE)s"
+  
+        METADATA
+
+            # OGC:WMS specific tags
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Layer/*/Title
+            "ows_title"    "%(TITLE)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Layer/*/Abstract
+            "ows_abstract"    "%(ABSTRACT)s"
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Layer/*/KeywordList/Keyword[]
+            "ows_keywordlist"    "USFS,NEMAC,Jeff,Mark"
+
+            # sets:
+            # /WMT_MS_Capabilities/Capability/Layer/*/@opaque
+            "wms_opaque"    "1"
+
+            # this positions this layer definition within the GROUP defined above
+            "wms_group_title" "%(GROUP)s"
+   
+            # this is the abstract text associated with "wms_group_title"
+            # you only need to define this once
+            "wms_group_abstract" "%(GROUP_ABSTRACT)s"
+
+#            # sets:
+#            # /WMT_MS_Capabilities/Capability/Layer/*/BoundingBox/@resx
+#            "wms_resx" "0.17578125"
+
+#            # sets:
+#            # /WMT_MS_Capabilities/Capability/Layer/*/BoundingBox/@resy
+#            "wms_resy" "0.17578125"
+
+#            # sets:
+#            # /WMT_MS_Capabilities/Capability/Layer/*/LatLonBoundingBox
+#            "ows_extent" "-180 -90 180 90"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/*/MetadataURL/OnlineResource/@type
+            "ows_metadataurl_type" "FGDC"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/*/MetadataURL/Format
+            "wms_metadataurl_format" "text/html"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/*/MetadataURL/OnlineResource/@xlink:href
+            "ows_metadataurl_href" "http://earthobservatory.nasa.gov/Newsroom/BlueMarble/"
+
+            # sets /WMT_MS_Capabilities/Capability/Layer/*/DataURL/Format
+            "wms_dataurl_format" "image/tiff"
+   
+            # sets /WMT_MS_Capabilities/Capability/Layer/*/DataURL/OnlineResource/@xlink:href
+            "wms_dataurl_href" "http://earthobservatory.nasa.gov/Newsroom/BlueMarble/Images/land_shallow_topo_2048.tif"
+
+            # OGC:WFS specific tags
+            # None!  This is raster data, not covered by OGC:WFS
+
+            "gml_include_items" "all"
+
+        END  # end METADATA
+    END # end LAYER

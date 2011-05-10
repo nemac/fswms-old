@@ -1,0 +1,20 @@
+#! /bin/bash
+
+#MAPSERV=/var/fswms.nemac.org/cgi-bin/mapserv-5.6.5.exe
+#MAPFILE=/var/fswms.nemac.org/msconfig/ews.map
+
+MAPSERV=../cgi-bin/mapserv-5.6.5.exe
+MAPFILE=../msconfig/ews.map
+
+if [ "${REQUEST_METHOD}" = "GET" ]; then
+  if [ -z "${QUERY_STRING}" ]; then
+    QUERY_STRING="map=${MAPFILE}"
+  else
+    QUERY_STRING="map=${MAPFILE}&${QUERY_STRING}"
+  fi
+  exec ${MAPSERV}
+else
+  echo "Sorry, I only understand GET requests."
+fi
+
+exit 1

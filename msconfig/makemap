@@ -1,0 +1,175 @@
+#! /usr/bin/python
+
+from osgeo import gdal, osr
+import sys, os, subprocess, datetime, re, shutil;
+
+try:
+    from Config import *
+except:
+    print "Cannot find local settings file 'Config.py'.  You need to create a Config.py file that contains"
+    print "settings appropriate for this copy of the FSWMS project.  You can use the file 'Config.py.template'"
+    print "as a starting point --- make a copy of that file called 'Config.py', and edit appropriately."
+    exit(-1)
+
+def rfind(dir, pattern):
+    lines = subprocess.Popen(['find', dir, '-name', pattern, '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
+    files = []
+    for line in lines:
+        if len(line) > 0:
+            files.append(line)
+    return files
+
+def getproj(tif):
+    projectionWkt = getwkt(tif)
+    spatialReferenceObj = osr.SpatialReference(projectionWkt)
+    projectionProj4 = spatialReferenceObj.ExportToProj4()
+    return projectionProj4
+
+def interp(string):
+  locals  = sys._getframe(1).f_locals
+  globals = sys._getframe(1).f_globals
+  for item in re.findall(r'#\{([^{]*)\}', string):
+    string = string.replace('#{%s}' % item,
+                            str(eval(item, globals, locals)))
+  return string
+
+def getwkt(tif):
+    dataSet = gdal.Open( tif, gdal.GA_ReadOnly )
+    return dataSet.GetProjection()
+
+# formatproj reformats a "proj4" projection string into the form required by a Mapserver mapfile.
+# Specifically, it splits it into one expression per line, delimited by double quotes.  It takes
+# an optional indentation level, and indents the returned string by that number of spaces.
+def formatproj(projstring, indentlevel=0):
+    answer = ""
+    indentation = " "*indentlevel
+    lines = []
+    for line in re.split(r'\s+', projstring):
+        if line != "":
+	   lines.append("%s%s\"%s\"" % (answer, indentation, line))
+    return "\n".join(lines)
+
+# getModDate gets the date when a file was last edited and formats that timestamp in a readable form
+def getModDate(filename):
+	t = os.stat(filename).st_mtime
+	return datetime.datetime.fromtimestamp(t)
+
+class Template:
+    def __init__(self, file):
+        f = open(file, "r")
+        self.contents = ""
+        for line in f:
+            self.contents = self.contents + line
+        f.close
+    def render(self, dict):
+        return self.contents % dict
+
+
+mapTemplate = Template("ews.map.tmpl")
+
+layerTemplate = Template("ews.layer.tmpl")
+
+# tiflist is a list that will hold a dictionary for each tif file; initialize tiflist to the empty list here:
+tiflist = []
+
+# now loop over each tif file returned by the listtifs() function, and append a dictionary to tiflist for each one:
+for tif in rfind(LAYER_DATA_DIR, '*.tif'):
+    tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
+    tif_fullpath = LAYER_DATA_DIR + '/' + tif;
+    proj = getproj(tif_fullpath)
+    modDate = getModDate(tif_fullpath)
+    nameform = re.sub(r'^.*/', '', tif)
+    if tif.startswith("rsac"):
+        group = "RSAC-FHTET"
+        group_abstract = "Layers uploaded by RSAC-FHTET"
+        colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
+        colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
+        keyimage = "legendicons/rsac_fhtet.png"
+    else:
+        group = "EFETAC-NASA"
+        group_abstract = "Layers uploaded by EFETAC-NASA"
+        colormapfile = "efetac_nasa_percent_change_cmap.cmap"
+        colormapcsv = "efetac_nasa_percent_change_cmap.csv"
+        keyimage = "legendicons/efetac_nasa.png"
+    tiflist.append({ 'TIF'             : tif,
+                     'PROJVALID'       : len(proj) > 0,
+                     'PROJ'            : formatproj(proj,10),
+                     'WKT'             : getwkt(tif_fullpath),
+                     'NAME'            : group + "_" + re.sub(r'_.*$', '', nameform),
+                     'GROUP'           : group,
+                     'DATA'            : LAYER_DATA_DIR + '/' + tif,
+                     'GROUP_ABSTRACT'  : group_abstract,
+                     'TITLE'           : tif,
+                     'ABSTRACT'        : tif,
+                     'COLORMAPFILE'    : colormapfile,
+                     'COLORMAPCSV'     : colormapcsv,
+                     'KEYIMAGE'        : "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png",
+		     'MODDATE'	       : modDate
+                     })
+
+# build the LAYERS string by appending a rendered layer template for each valid layer:
+LAYERS = ""
+for tifdict in tiflist:
+    if tifdict['PROJVALID']:
+        LAYERS = LAYERS + layerTemplate.render( tifdict )
+
+# write out two new mapfiles: ews.map, using EPSG 3785 (WebMercator), and ewswgs84, using EPSG 4326:
+SERVICE_NAME = "ews"
+f_new = open("ews.map", "w")
+f_new.write( mapTemplate.render( {
+            'LAYERS'                  : LAYERS,
+            'EPSG'                    : "3785",
+            'SERVICE_NAME'             : SERVICE_NAME,
+            'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
+            'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),
+            'OWS_TITLE'               : "NEMAC %s WMS" % (SERVICE_NAME),
+            'OWS_ABSTRACT'            : "NEMAC %s WMS" % (SERVICE_NAME),
+            'OWS_KEYWORDLIST'         : "mapserver,ogc,%s" % (SERVICE_NAME),
+            'SERVICE_URL'             : "%s/%s" % (SERVER_URL, SERVICE_NAME),
+            'MS_ERRORFILE'            : "../logs/%s.log" % (SERVICE_NAME),
+            'WFS_NAMESPACE_PREFIX'    : SERVICE_NAME
+            } ) )
+f_new.close()
+
+f_new = open("ewswgs84.map", "w")
+SERVICE_NAME = "ewswgs84"
+f_new.write( mapTemplate.render( {
+            'LAYERS'                  : LAYERS,
+            'EPSG'                    : "4326",
+            'SERVICE_NAME'             : SERVICE_NAME,
+            'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
+            'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),
+            'OWS_TITLE'               : "NEMAC %s WMS" % (SERVICE_NAME),
+            'OWS_ABSTRACT'            : "NEMAC %s WMS" % (SERVICE_NAME),
+            'OWS_KEYWORDLIST'         : "mapserver,ogc,%s" % (SERVICE_NAME),
+            'SERVICE_URL'             : "%s/%s" % (SERVER_URL, SERVICE_NAME),
+            'MS_ERRORFILE'            : "../logs/%s.log" % (SERVICE_NAME),
+            'WFS_NAMESPACE_PREFIX'    : SERVICE_NAME
+            } ) )
+f_new.close()
+
+# write out the html file:
+f_out = open("../html/index.html", "w");
+f_out.write(interp("""
+WMS addresses are:
+<ul>
+<li><a href="#{SERVER_URL}/ews">#{SERVER_URL}/ews</a> (WebMercator projection) [ <a href="#{SERVER_URL}/ews?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
+<li><a href="#{SERVER_URL}/ewswgs84">#{SERVER_URL}/ewswgs84</a> (WGS 84) [ <a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
+</ul>
+<p>
+Currently uploaded layers are:
+"""
+))
+f_out.write("<ul>\n");
+for tifdict in tiflist:
+    if not tifdict['PROJVALID']:
+        f_out.write("<p><li>%(TIF)s:<br>\nThis data file does not contain projection metadata and therefore cannot be used; it has been omitted from WMS.\n" % tifdict)
+    else:
+        f_out.write(interp("""<p><li>%(NAME)s:<br>
+file:&nbsp;&nbsp;%(TIF)s<br>
+%(WKT)s<br>
+<font size="-1"><a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=%(NAME)s&VERSION=1.1.1&FORMAT=image/png"><img align="bottom" src="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=%(NAME)s&VERSION=1.1.1&FORMAT=image/png" border="0"/></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;<a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=%(NAME)s&VERSION=1.1.1&FORMAT=image/png">WMS GetLegendGraphic</a>&nbsp;]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Color Map CSV File: <a href="%(COLORMAPCSV)s">%(COLORMAPCSV)s</a></font><br>
+Last Modified: %(MODDATE)s
+""") % tifdict)
+
+f_out.close()
