@@ -74,38 +74,85 @@ tiflist = []
 
 # now loop over each tif file returned by the listtifs() function, and append a dictionary to tiflist for each one:
 for tif in rfind(LAYER_DATA_DIR, '*.tif'):
-    tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
-    tif_fullpath = LAYER_DATA_DIR + '/' + tif;
-    proj = getproj(tif_fullpath)
-    modDate = getModDate(tif_fullpath)
-    nameform = re.sub(r'^.*/', '', tif)
-    if tif.startswith("rsac"):
-        group = "RSAC-FHTET"
-        group_abstract = "Layers uploaded by RSAC-FHTET"
-        colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
-        colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
-        keyimage = "legendicons/rsac_fhtet.png"
-    else:
-        group = "EFETAC-NASA"
-        group_abstract = "Layers uploaded by EFETAC-NASA"
-        colormapfile = "efetac_nasa_percent_change_cmap.cmap"
-        colormapcsv = "efetac_nasa_percent_change_cmap.csv"
-        keyimage = "legendicons/efetac_nasa.png"
-    tiflist.append({ 'TIF'             : tif,
-                     'PROJVALID'       : len(proj) > 0,
-                     'PROJ'            : formatproj(proj,10),
-                     'WKT'             : getwkt(tif_fullpath),
-                     'NAME'            : group + "_" + re.sub(r'_.*$', '', nameform),
-                     'GROUP'           : group,
-                     'DATA'            : LAYER_DATA_DIR + '/' + tif,
-                     'GROUP_ABSTRACT'  : group_abstract,
-                     'TITLE'           : tif,
-                     'ABSTRACT'        : tif,
-                     'COLORMAPFILE'    : colormapfile,
-                     'COLORMAPCSV'     : colormapcsv,
-                     'KEYIMAGE'        : "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png",
-		     'MODDATE'	       : modDate
-                     })
+    try:
+        tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
+        tif_fullpath = LAYER_DATA_DIR + '/' + tif;
+        proj = getproj(tif_fullpath)
+        modDate = getModDate(tif_fullpath)
+        nameform = re.sub(r'^.*/', '', tif)
+        if tif.startswith("rsac"):
+            group = "RSAC-FHTET"
+            group_abstract = "Layers uploaded by RSAC-FHTET"
+            colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
+            colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
+            keyimage = "legendicons/rsac_fhtet.png"
+        else:
+            group = "EFETAC-NASA"
+            group_abstract = "Layers uploaded by EFETAC-NASA"
+            colormapfile = "efetac_nasa_percent_change_cmap.cmap"
+            colormapcsv = "efetac_nasa_percent_change_cmap.csv"
+            keyimage = "legendicons/efetac_nasa.png"
+        tiflist.append({ 'TIF'             : tif,
+                         'PROJVALID'       : len(proj) > 0,
+                         'PROJ'            : formatproj(proj,10),
+                         'WKT'             : getwkt(tif_fullpath),
+                         'NAME'            : group + "_" + re.sub(r'_.*$', '', nameform),
+                         'GROUP'           : group,
+                         'DATA'            : LAYER_DATA_DIR + '/' + tif,
+                         'GROUP_ABSTRACT'  : group_abstract,
+                         'TITLE'           : tif,
+                         'ABSTRACT'        : tif,
+                         'COLORMAPFILE'    : colormapfile,
+                         'COLORMAPCSV'     : colormapcsv,
+                         'KEYIMAGE'        : "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png",
+                         'MODDATE'	       : modDate
+                         })
+    except:
+        continue
+
+######################################
+
+ARCHIVE_DIR = "/flood/fsdata/efetac_nasa/ews"
+for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".tif")], reverse=False):
+    try:
+        tif = re.sub('^' + ARCHIVE_DIR + '/', '', tif)
+        tif_fullpath = ARCHIVE_DIR + '/' + tif;
+        proj = getproj(tif_fullpath)
+        modDate = getModDate(tif_fullpath)
+        nameform = re.sub(r'^.*/', '', tif)
+        if tif.startswith("rsac"):
+            group = "RSAC-FHTET"
+            group_abstract = "Layers uploaded by RSAC-FHTET"
+            colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
+            colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
+            keyimage = "legendicons/RSAC-FHTET_nrt_product.png"
+        else:
+            group = "EFETAC-NASA"
+            group_abstract = "Layers uploaded by EFETAC-NASA"
+            colormapfile = "efetac_nasa_percent_change_cmap.cmap"
+            colormapcsv = "efetac_nasa_percent_change_cmap.csv"
+            keyimage = "legendicons/EFETAC-NASA_nrt_product.png"
+        tiflist.append({ 'TIF'             : tif,
+                         'PROJVALID'       : len(proj) > 0,
+                         'PROJ'            : formatproj(proj,10),
+                         'WKT'             : getwkt(tif_fullpath),
+                         'NAME'            : group + "_" + re.sub(r'_.*$', '', nameform),
+                         'GROUP'           : group,
+                         'DATA'            : ARCHIVE_DIR + '/' + tif,
+                         'GROUP_ABSTRACT'  : group_abstract,
+                         'TITLE'           : tif,
+                         'ABSTRACT'        : tif,
+                         'COLORMAPFILE'    : colormapfile,
+                         'COLORMAPCSV'     : colormapcsv,
+                         'KEYIMAGE'        : keyimage,
+                         'MODDATE'	   : modDate
+                         })
+    except:
+        continue
+
+######################################
+
+
 
 # build the LAYERS string by appending a rendered layer template for each valid layer:
 LAYERS = ""
@@ -118,8 +165,10 @@ SERVICE_NAME = "ews"
 f_new = open("ews.map", "w")
 f_new.write( mapTemplate.render( {
             'LAYERS'                  : LAYERS,
-            'EPSG'                    : "3785",
-            'SERVICE_NAME'             : SERVICE_NAME,
+#            'EPSG'                    : "3785",
+            'WMS_SRS'                 : "EPSG:3785",
+            'MAPFILE_PROJECTION'      : '"init=epsg:3785"',
+            'SERVICE_NAME'            : SERVICE_NAME,
             'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
             'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),
             'OWS_TITLE'               : "NEMAC %s WMS" % (SERVICE_NAME),
@@ -135,7 +184,9 @@ f_new = open("ewswgs84.map", "w")
 SERVICE_NAME = "ewswgs84"
 f_new.write( mapTemplate.render( {
             'LAYERS'                  : LAYERS,
-            'EPSG'                    : "4326",
+#           'EPSG'                    : "4326",
+            'WMS_SRS'                 : "EPSG:4326",
+            'MAPFILE_PROJECTION'      : '"init=epsg:4326"',
             'SERVICE_NAME'             : SERVICE_NAME,
             'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
             'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),

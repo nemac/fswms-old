@@ -14,6 +14,7 @@
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_current' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_current.png
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_previous1' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_previous1.png
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_previous2' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_previous2.png
+./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA NRT' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_nrt_product.png
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_current' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_current.png
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_previous1' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_previous1.png
 ./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_previous2' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_previous2.png
