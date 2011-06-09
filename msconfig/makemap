@@ -72,43 +72,69 @@ layerTemplate = Template("ews.layer.tmpl")
 # tiflist is a list that will hold a dictionary for each tif file; initialize tiflist to the empty list here:
 tiflist = []
 
+retroPattern = r'-retro/(.+)/'
+
 # now loop over each tif file returned by the listtifs() function, and append a dictionary to tiflist for each one:
 for tif in rfind(LAYER_DATA_DIR, '*.tif'):
+    tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
+    m = re.search(retroPattern, tif)
+    if m != None:
+        baseLineFolder = m.group(1) + "_"
+    else:
+        baseLineFolder = ""
+    tif_fullpath = LAYER_DATA_DIR + '/' + tif;
+
     try:
-        tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
-        tif_fullpath = LAYER_DATA_DIR + '/' + tif;
         proj = getproj(tif_fullpath)
-        modDate = getModDate(tif_fullpath)
-        nameform = re.sub(r'^.*/', '', tif)
-        if tif.startswith("rsac"):
-            group = "RSAC-FHTET"
-            group_abstract = "Layers uploaded by RSAC-FHTET"
-            colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
-            colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
-            keyimage = "legendicons/rsac_fhtet.png"
-        else:
-            group = "EFETAC-NASA"
-            group_abstract = "Layers uploaded by EFETAC-NASA"
-            colormapfile = "efetac_nasa_percent_change_cmap.cmap"
-            colormapcsv = "efetac_nasa_percent_change_cmap.csv"
-            keyimage = "legendicons/efetac_nasa.png"
-        tiflist.append({ 'TIF'             : tif,
-                         'PROJVALID'       : len(proj) > 0,
-                         'PROJ'            : formatproj(proj,10),
-                         'WKT'             : getwkt(tif_fullpath),
-                         'NAME'            : group + "_" + re.sub(r'_.*$', '', nameform),
-                         'GROUP'           : group,
-                         'DATA'            : LAYER_DATA_DIR + '/' + tif,
-                         'GROUP_ABSTRACT'  : group_abstract,
-                         'TITLE'           : tif,
-                         'ABSTRACT'        : tif,
-                         'COLORMAPFILE'    : colormapfile,
-                         'COLORMAPCSV'     : colormapcsv,
-                         'KEYIMAGE'        : "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png",
-                         'MODDATE'	       : modDate
-                         })
     except:
-        continue
+	continue
+
+    if tif.startswith("rsac"):
+        group          = "RSAC-FHTET"
+        group_abstract = "Layers uploaded by RSAC-FHTET"
+        colormapfile   = "rsac_fhtet_percent_change_cmap.cmap"
+        colormapcsv    = "rsac_fhtet_percent_change_cmap.csv"
+        keyimage       = "legendicons/rsac_fhtet.png"
+    else:
+        group          = "EFETAC-NASA"
+        group_abstract = "Layers uploaded by EFETAC-NASA"
+        colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
+        colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
+        keyimage       = "legendicons/efetac_nasa.png"
+
+
+
+    modDate = getModDate(tif_fullpath)
+    nameform = re.sub(r'^.*/', '', tif)
+    nameformStart = re.sub(r'_.*$', '', nameform)
+#    if nameformStart.isdigit() == True:
+#        print "ZOMGGGGG"
+#	layerNameForm = nameform
+#    	retroForm = r'.+_(.+)_.+_.+$'
+#	rs = re.search(retroForm, nameform)
+#	retroLayerType = rs.group(1)
+#	print "Layer %s is of layer type %s" % (tif, retroLayerType)
+#	legendFile = "legendicons/" + group + "_" + retroLayerType + ".png"
+#	
+#    else:
+    legendFile = "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png"
+    layerNameForm = nameformStart
+
+    tiflist.append({ 'TIF'             : tif,
+                     'PROJVALID'       : len(proj) > 0,
+                     'PROJ'            : formatproj(proj,10),
+                     'WKT'             : getwkt(tif_fullpath),
+                     'NAME'            : group + "_" + baseLineFolder + layerNameForm,    # change this to be like "EFETAC-NASA_3yr-baseline_current"
+                     'GROUP'           : group,
+                     'DATA'            : LAYER_DATA_DIR + '/' + tif,
+                     'GROUP_ABSTRACT'  : group_abstract,
+                     'TITLE'           : tif, # change to be desired layer title in the viewer, e.g. efetac_nasa-retro/3YrBaseline/current_december3_december26.tif
+                     'ABSTRACT'        : tif, # change this to match title 
+                     'COLORMAPFILE'    : colormapfile,
+                     'COLORMAPCSV'     : colormapcsv,
+                     'KEYIMAGE'        : legendFile,
+		     'MODDATE'	       : modDate
+                     })
 
 ######################################
 
@@ -165,8 +191,8 @@ SERVICE_NAME = "ews"
 f_new = open("ews.map", "w")
 f_new.write( mapTemplate.render( {
             'LAYERS'                  : LAYERS,
-#            'EPSG'                    : "3785",
-            'WMS_SRS'                 : "EPSG:3785",
+#            'EPSG'                   : "3785",
+            'WMS_SRS'                 : "EPSG:3785 EPSG:4326",
             'MAPFILE_PROJECTION'      : '"init=epsg:3785"',
             'SERVICE_NAME'            : SERVICE_NAME,
             'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
@@ -187,7 +213,7 @@ f_new.write( mapTemplate.render( {
 #           'EPSG'                    : "4326",
             'WMS_SRS'                 : "EPSG:4326",
             'MAPFILE_PROJECTION'      : '"init=epsg:4326"',
-            'SERVICE_NAME'             : SERVICE_NAME,
+            'SERVICE_NAME'            : SERVICE_NAME,
             'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
             'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),
             'OWS_TITLE'               : "NEMAC %s WMS" % (SERVICE_NAME),
