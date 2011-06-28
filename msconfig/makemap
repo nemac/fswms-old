@@ -94,13 +94,13 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
         group_abstract = "Layers uploaded by RSAC-FHTET"
         colormapfile   = "rsac_fhtet_percent_change_cmap.cmap"
         colormapcsv    = "rsac_fhtet_percent_change_cmap.csv"
-        keyimage       = "legendicons/rsac_fhtet.png"
+        keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
     else:
         group          = "EFETAC-NASA"
         group_abstract = "Layers uploaded by EFETAC-NASA"
         colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
         colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
-        keyimage       = "legendicons/efetac_nasa.png"
+        keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
 
 
 
@@ -117,7 +117,7 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
 #	legendFile = "legendicons/" + group + "_" + retroLayerType + ".png"
 #	
 #    else:
-    legendFile = "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png"
+    #legendFile = "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png"
     layerNameForm = nameformStart
 
     tiflist.append({ 'TIF'             : tif,
@@ -132,7 +132,8 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
                      'ABSTRACT'        : tif, # change this to match title 
                      'COLORMAPFILE'    : colormapfile,
                      'COLORMAPCSV'     : colormapcsv,
-                     'KEYIMAGE'        : legendFile,
+                     #'KEYIMAGE'        : legendFile,
+                     'KEYIMAGE'        : keyimage,
 		     'MODDATE'	       : modDate
                      })
 
@@ -149,15 +150,15 @@ for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".t
         if tif.startswith("rsac"):
             group = "RSAC-FHTET"
             group_abstract = "Layers uploaded by RSAC-FHTET"
-            colormapfile = "rsac_fhtet_percent_change_cmap.cmap"
-            colormapcsv = "rsac_fhtet_percent_change_cmap.csv"
-            keyimage = "legendicons/RSAC-FHTET_nrt_product.png"
+            colormapfile   = "rsac_fhtet_percent_change_cmap.cmap"
+            colormapcsv    = "rsac_fhtet_percent_change_cmap.csv"
+            keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
         else:
             group = "EFETAC-NASA"
             group_abstract = "Layers uploaded by EFETAC-NASA"
-            colormapfile = "efetac_nasa_percent_change_cmap.cmap"
-            colormapcsv = "efetac_nasa_percent_change_cmap.csv"
-            keyimage = "legendicons/EFETAC-NASA_nrt_product.png"
+            colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
+            colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
+            keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
         tiflist.append({ 'TIF'             : tif,
                          'PROJVALID'       : len(proj) > 0,
                          'PROJ'            : formatproj(proj,10),
