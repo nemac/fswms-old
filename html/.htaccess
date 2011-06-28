@@ -14,15 +14,3 @@
     Allow from all
     SetHandler cgi-script
 </Files>
-<Files "ewswcs">
-    Allow from all
-    SetHandler cgi-script
-</Files>
-<Files "lucky">
-    Allow from all
-    SetHandler cgi-script
-</Files>
-<Files "lucky2">
-    Allow from all
-    SetHandler cgi-script
-</Files>

@@ -61,10 +61,6 @@ MAP
             "wms_abstract"           "%(OWS_ABSTRACT)s"
             "wms_onlineresource"     "%(SERVICE_URL)s"
             "wms_srs"                "%(WMS_SRS)s"
-
-            "wcs_label"              "My WCS Service"
-            "wcs_srs"                "EPSG:4326"
-
         END
     END
 
@@ -74,7 +70,9 @@ MAP
 
     # set defaults for GetLegendGraphic requests 
     LEGEND
-      KEYSIZE 137 55
+      #KEYSIZE 137 55
+      #KEYSIZE 175 277
+      KEYSIZE 181 277
     END
 
 %(LAYERS)s
