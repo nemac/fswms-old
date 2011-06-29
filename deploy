@@ -2,59 +2,159 @@
 
 import sys, os, subprocess, datetime, re, shutil
 
-if len(sys.argv) != 2:
-   print "usage: deploy BASE_DIR"
-   exit(-1)
+########################################################################
 
-BASE_DIR = sys.argv[1]
-
-
-KEEPERS = ['msconfig/Config.py','html/tmp', 'logs']
-
-DIRS_TO_ENSURE = [
-   {'dir':'html/tmp',  'perms':'a+rwx'},
-   {'dir':'logs',      'perms':'a+rwx'}
-]
-
-try:
-    sys.path.append(BASE_DIR + "/msconfig")
-    from Config import *
-except:
-    print "Cannot find 'Config.py' in %s/msconfig" % BASE_DIR
-    exit(-1)
-
-def listfiles():
-    files = [re.sub(r'^./', '', f)
-             for f in subprocess.Popen(['find', '.', '-type', 'f', '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
-             if re.search('.svn', f) == None]
-    files = [f for f in files
-             if (
-	         (re.search(r'~$',f) == None)
+def listfiles(dir):
+   # Assuming that dir is a fswms directory, return a list of the files (files only --- not directories) it contains,
+   # filterd to include only the files that should be included in a deployment.  This omits certain files, such as
+   # any files in a subversion (.svn) subdirectory, emacs backup (*~) files, and this deploy script.
+   files = [re.sub(r'^'+dir+'/', '', f)
+            for f in subprocess.Popen(['find', dir, '-type', 'f', '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
+            if re.search('.svn', f) == None]
+   files = [f for f in files
+            if (
+                (re.search(r'~$',f) == None)
 	         and (f != 'deploy')
 	         and (f != '')
                 )]
-    return files
+   return files
 
 def write_filelist(filename, filelist):
+   # write a list of filenames to a file, one filename per line
    fp = open(filename, "w")
    for file in filelist:
       fp.write(file + "\n")
    fp.close()
 
-write_filelist("/tmp/KEEPERS.list", KEEPERS)    
-os.system("(cd %s ; tar -c -v -f /tmp/KEEPERS.tar -T /tmp/KEEPERS.list --ignore-failed-read)" % BASE_DIR)
 
-os.system("(cd %s ; rm -rf *)" % BASE_DIR);
+class TmpFileManager:
 
-write_filelist("/tmp/FILES.list", listfiles())
-os.system("tar -c -f - -T /tmp/FILES.list | ( cd %s ; tar xvf - )" % BASE_DIR)
-os.system("(cd %s ; tar xvf /tmp/KEEPERS.tar)" % BASE_DIR)
+    def __init__(self):
+       self.files = []
 
+    def tmpFile(self, name):
+       self.files.append(name)
+       return name
+
+    def removeAll(self):
+       for file in self.files:
+          try:
+             os.remove(file)
+          except:
+             continue
+
+########################################################################
+
+#
+# Make that the current directory is a fswms root directory
+#
+if (
+   (not os.path.exists("./msconfig"))
+   or (not os.path.exists("./msconfig/fscron"))
+   or (not os.path.exists("./html"))
+   ):
+   print "Error: The current directory does not appear to be a fswms root directory."
+   exit(-1)
+
+
+#
+# read the first argument specified on the command line into the variable DEPLOY_DIR:
+#
+if len(sys.argv) != 2:
+   print "usage: deploy DEPLOY_DIR"
+   exit(-1)
+DEPLOY_DIR = sys.argv[1]
+
+#
+# KEEPRS is a list of files/directories in DEPLOY_DIR that should be
+# preserved; the deploy process will remove all current files and
+# directories from DEPLOY_DIR, except for the ones listed here:
+#
+KEEPERS = ['msconfig/Config.py','html/tmp', 'logs']
+
+#
+# DIRS_TO_ENSURE is a list of directories to be created in the DEPLOY_DIR
+# if they don't yet exist, along with "chmod" permissions to assign to them:
+#
+DIRS_TO_ENSURE = [
+   {'dir':'html/tmp',  'perms':'a+rwx'},
+   {'dir':'logs',      'perms':'a+rwx'}
+]
+
+#
+# Load the Config.py file from DEPLOY_DIR/msconfig:
+#
+try:
+    sys.path.append(DEPLOY_DIR + "/msconfig")
+    from Config import *
+except:
+    print "Cannot find 'Config.py' in %s/msconfig" % DEPLOY_DIR
+    exit(-1)
+
+#
+# Check to make sure that the BASE_DIR specified in the DEPLOY_DIR/msconfig/Config.py
+# is the same as DEPLOY_DIR; if not, abort.
+#
+if os.path.abspath(DEPLOY_DIR) != os.path.abspath(BASE_DIR):
+   print "Error: the Config.py file in your specified DEPLOY_DIR (%s/Config.py)" % DEPLOY_DIR
+   print "  sets BASE_DIR=%s" % BASE_DIR
+   print "  which is not the same as %s" % DEPLOY_DIR
+   exit(-1)
+
+#
+# Use our little TmpFileManager class (defined above) to keep track of temporary files
+# that we need, so that they can be deleted when we're done.
+#
+tmpFileManager = TmpFileManager()
+KEEPERS_LIST   = tmpFileManager.tmpFile("/tmp/KEEPERS.list")
+KEEPERS_TAR    = tmpFileManager.tmpFile("/tmp/KEEPERS.tar")
+FILES_LIST     = tmpFileManager.tmpFile("/tmp/FILES.list")
+
+#
+# Write the KEEPERS list to a temporary file (KEEPERS_LIST), and save them in a temporary tar file (KEEPERS_TAR):
+#
+write_filelist(KEEPERS_LIST, KEEPERS)    
+os.system("(cd %s ; tar -c -v -f %s -T %s --ignore-failed-read)" % (DEPLOY_DIR,KEEPERS_TAR,KEEPERS_LIST))
+
+#
+# Write the list of files to be deployed from the current fswms dir to a temporary file (FILES_LIST):
+#
+write_filelist(FILES_LIST, listfiles('.'))
+
+#
+# Remove everything from the current DEPLOY_DIR
+#
+os.system("(cd %s ; rm -rf *)" % DEPLOY_DIR);
+
+#
+# Copy all the files from FILES_LIST to the DEPLOY_DIR:
+#
+os.system("tar -c -f - -T %s | ( cd %s ; tar xvf - )" % (FILES_LIST,DEPLOY_DIR))
+
+#
+# Restore the files saved in KEEPERS_TAR:
+#
+os.system("(cd %s ; tar xvf %s)" % (DEPLOY_DIR,KEEPERS_TAR))
+
+#
+# Ensure that every directory in DIRS_TO_ENSURE exists in the DEPLOY_DIR:
+#
 for dir in DIRS_TO_ENSURE:
-    if not os.path.exists(BASE_DIR + "/" + dir['dir']):
-       os.mkdir(BASE_DIR + "/" + dir['dir'])
+    if not os.path.exists(DEPLOY_DIR + "/" + dir['dir']):
+       os.mkdir(DEPLOY_DIR + "/" + dir['dir'])
 
-os.system("(cd %s ; chgrp -R fswms .)" % BASE_DIR)
+#
+# Change the group ownership of the whole deploy dir to 'fswms':
+#
+os.system("(cd %s ; chgrp -R fswms .)" % DEPLOY_DIR)
 
+#
+# For each directory in DIRS_TO_ENSURE, apply its permissions:
+#
 for dir in DIRS_TO_ENSURE:
-   os.system("chmod %s %s/%s" % (dir['perms'],BASE_DIR,dir['dir']))
+   os.system("chmod %s %s/%s" % (dir['perms'],DEPLOY_DIR,dir['dir']))
+
+#
+# Remove temporary files:
+#
+tmpFileManager.removeAll();
