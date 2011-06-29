@@ -184,7 +184,7 @@ elif command == "create":
         print "Error: version %s already exists in the subversion repository" % version
         exit(-1)
     tag = "fswms-%s" % version
-    os.system("svn cp -m 'create tags/%s' %s/trunk %s/tags/%s" % (tag,SVN_ROOT,SVN_ROOT,tag))
+    os.system("svn --quiet cp -m 'create tags/%s' %s/trunk %s/tags/%s" % (tag,SVN_ROOT,SVN_ROOT,tag))
     print "created %s " % tag
 
 elif command == "delete":
@@ -193,7 +193,7 @@ elif command == "delete":
         print "Error: version %s does not exist in the subversion repository" % version
         exit(-1)
     tag = "fswms-%s" % version
-    os.system("svn -m 'remove tags/%s' rm %s/tags/%s" % (tag,SVN_ROOT,tag))
+    os.system("svn --quiet -m 'remove tags/%s' rm %s/tags/%s" % (tag,SVN_ROOT,tag))
     print "deleted %s " % tag
 
 elif command == "deploy":
