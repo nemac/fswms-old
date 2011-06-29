@@ -3,25 +3,34 @@
 import re, os, sys, subprocess
 
 #
-# KEEPRS is a list of files/directories in DEPLOY_DIR that should be
-# preserved; the deploy process will remove all current files and
-# directories from DEPLOY_DIR, except for the ones listed here:
+# The deployment directory, where the production version of fswms is deployed:
+#
+DEPLOY_DIR   = "/var/fswms.nemac.org"
+
+#
+# The URL of the svn repository root for fswms:
+#
+SVN_ROOT     = "svn+ssh://svn.nemac.org/usr/local/svn-repos/fswms"
+
+#
+# KEEPERS is a list of files/directories in a deployed copy of fswms
+# that should be preserved when a new copy is deployed on top of it.
+# The deploying process will remove all current files and directories
+# from the deployment directory, except for the ones listed here:
 #
 KEEPERS = ['msconfig/Config.py','html/tmp', 'logs']
 
 #
-# DIRS_TO_ENSURE is a list of directories to be created in the DEPLOY_DIR
-# if they don't yet exist, along with "chmod" permissions to assign to them:
+# DIRS_TO_ENSURE is a list of directories to be created in the deployment
+# directory if they don't yet exist, along with "chmod" permissions to
+# assign to them:
 #
 DIRS_TO_ENSURE = [
    {'dir':'html/tmp',  'perms':'a+rwx'},
    {'dir':'logs',      'perms':'a+rwx'}
 ]
 
-
-SVN_ROOT     = "svn+ssh://svn.nemac.org/usr/local/svn-repos/fswms"
 VERSION_LIST = [re.sub(r'^fswms-(.*)/$',r'\1',x) for x in subprocess.Popen(['svn', 'list', SVN_ROOT + '/tags'], stdout=subprocess.PIPE).communicate()[0].split('\n') if x != '']
-DEPLOY_DIR   = "/var/fswms.nemac.org"
 
 def version_exists(version):
     for v in VERSION_LIST:
