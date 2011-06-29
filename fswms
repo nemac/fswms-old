@@ -200,6 +200,7 @@ elif command == "deploy":
     deploy(DEPLOY_DIR)
     os.chdir(cwd)
     print "running %s/msconfig/fscron..." % DEPLOY_DIR
+    os.system("cd %s/msconfig ; ./fscron" % DEPLOY_DIR)
     print "cleaning up..."
     os.system("/bin/rm -rf .stage")
     print "done."
