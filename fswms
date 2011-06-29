@@ -39,7 +39,6 @@ def listfiles(dir):
    files = [f for f in files
             if (
                 (re.search(r'~$',f) == None)
-	         and (f != 'deploy')
 	         and (f != 'fswms')
 	         and (f != '')
                 )]
@@ -161,7 +160,15 @@ def deploy(DEPLOY_DIR):
 
 ########################################################################
 
-command = sys.argv[1]
+def usage():
+    print "usage: fswms COMMAND [ARG ...]"
+    print "   where COMMAND is one of: 'list', 'create', 'delete', 'deploy'"
+    exit(-1)
+
+try:
+    command = sys.argv[1]
+except:
+    usage()
 
 if command == "list":
     print ("The versions of fswms currently defined in the subversion repository are: %s" % ", ".join(VERSION_LIST))
@@ -204,3 +211,6 @@ elif command == "deploy":
     print "cleaning up..."
     os.system("/bin/rm -rf .stage")
     print "done."
+
+else:
+    usage()
