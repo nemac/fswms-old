@@ -226,9 +226,13 @@ f_new.write( mapTemplate.render( {
             } ) )
 f_new.close()
 
+FSWMS_VERSION = subprocess.Popen(['../version'], stdout=subprocess.PIPE).communicate()[0].strip()
+
 # write out the html file:
 f_out = open("../html/index.html", "w");
 f_out.write(interp("""
+This is FSWMS version #{FSWMS_VERSION}.
+
 WMS addresses are:
 <ul>
 <li><a href="#{SERVER_URL}/ews">#{SERVER_URL}/ews</a> (WebMercator projection) [ <a href="#{SERVER_URL}/ews?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]

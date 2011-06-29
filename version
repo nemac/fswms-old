@@ -18,6 +18,6 @@ HeadURL = "$HeadURL$"
 #
 match = re.search(r'/fswms/(.*)/version', HeadURL)
 if (match):
-    print re.sub(r'^tags/','',match.group(1))
+    print re.sub(r'^tags/','',match.group(1)),
 else:
-    print "unknown"
+    print "unknown",
