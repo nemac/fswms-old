@@ -10,7 +10,7 @@ import re
 # Subversion will modify the following line automatically so that it gives the full
 # URL of this file in the subversion repository.  Do not modify this line by hand:
 #
-HeadURL = "$HeadURL$"
+HeadURL = "$HeadURL: svn+ssh://svn.nemac.org/usr/local/svn-repos/fswms/trunk/version $"
 
 #
 # The following bit of code examines the value of HeadURL from above, extracts
