@@ -148,6 +148,11 @@ def deploy(DEPLOY_DIR):
     os.system("(cd %s ; chgrp -R fswms .)" % DEPLOY_DIR)
 
     #
+    # Make the whole DEPLOY_DIR directory tree group writeable:
+    #
+    os.system("(cd %s ; chmod -R g+w .)" % DEPLOY_DIR)
+
+    #
     # For each directory in DIRS_TO_ENSURE, apply its permissions:
     #
     for dir in DIRS_TO_ENSURE:
