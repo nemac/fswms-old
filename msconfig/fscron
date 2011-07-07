@@ -20,7 +20,8 @@
 #./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'EFETAC-NASA_previous2' efetac_nasa_percent_change_cmap.csv legendicons/EFETAC-NASA_previous2.png
 
 #./makecmap -q efetac_nasa_percent_change_cmap.csv efetac_nasa_percent_change_cmap.cmap
-./makecmap -q TACscolors.csv efetac_nasa_percent_change_cmap.cmap
+#./makecmap -q TACscolors.csv efetac_nasa_percent_change_cmap.cmap
+./makecmap -q percent_ndvi_lut_for_stretched_unsigned_8_bit-7-6-2011_just_dn_r_g_b_luts.csv efetac_nasa_percent_change_cmap.cmap
 ./makecmap -q rsac_fhtet_percent_change_cmap.csv rsac_fhtet_percent_change_cmap.cmap
 
 cp efetac_nasa_percent_change_cmap.csv ../html

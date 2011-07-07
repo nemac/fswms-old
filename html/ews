@@ -3,7 +3,7 @@
 #MAPSERV=/var/fswms.nemac.org/cgi-bin/mapserv-5.6.5.exe
 #MAPFILE=/var/fswms.nemac.org/msconfig/ews.map
 
-MAPSERV=../cgi-bin/mapserv-5.6.5.exe
+MAPSERV=../cgi-bin/mapserv-6.0.0.exe
 MAPFILE=../msconfig/ews.map
 
 if [ "${REQUEST_METHOD}" = "GET" ]; then

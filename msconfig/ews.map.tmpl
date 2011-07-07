@@ -61,6 +61,8 @@ MAP
             "wms_abstract"           "%(OWS_ABSTRACT)s"
             "wms_onlineresource"     "%(SERVICE_URL)s"
             "wms_srs"                "%(WMS_SRS)s"
+	     "wcs_label"              "NEMAC ews WCS"
+            "wcs_srs"                "EPSG:2163"
         END
     END
 
@@ -72,9 +74,106 @@ MAP
     LEGEND
       #KEYSIZE 137 55
       #KEYSIZE 175 277
-      KEYSIZE 181 277
+      #KEYSIZE 181 277
+      KEYSIZE 154 297
     END
 
 %(LAYERS)s
+
+    LAYER
+        NAME     firescars
+        TYPE     RASTER
+        DUMP     TRUE
+        STATUS   OFF
+        DATA     /flood/fsdata-internal/efetac_nasa/AncillaryData/conus_fire_scars_2000_thru_2010_from_mtbs_and_geomac_us4b.img
+        HEADER   ./templates/layer_query_header.html
+        TEMPLATE ./templates/layer_query_body.html
+        CLASS
+         EXPRESSION "1"
+         STYLE
+         COLOR 255 158 175
+         END
+        END
+	CLASS
+         EXPRESSION "2"
+         STYLE
+         COLOR 232 91 232
+         END
+        END
+	CLASS
+         EXPRESSION "3"
+         STYLE
+         COLOR 170 0 229
+         END
+        END
+	CLASS
+         EXPRESSION "4"
+         STYLE
+         COLOR 0 0 255
+         END
+        END
+	CLASS
+         EXPRESSION "5"
+         STYLE
+         COLOR 0 127 255
+         END
+        END
+	CLASS
+         EXPRESSION "6"
+         STYLE
+         COLOR 0 255 255
+         END
+        END
+	CLASS
+         EXPRESSION "7"
+         STYLE
+         COLOR 0 204 0
+         END
+        END
+	CLASS
+         EXPRESSION "8"
+         STYLE
+         COLOR 147 198 0
+         END
+        END
+	CLASS
+         EXPRESSION "9"
+         STYLE
+         COLOR 255 255 0
+         END
+        END
+	CLASS
+         EXPRESSION "10"
+         STYLE
+         COLOR 255 165 0
+         END
+        END
+	CLASS
+         EXPRESSION "11"
+         STYLE
+         COLOR 255 0 0
+         END
+        END
+	
+        PROJECTION
+	"proj=laea"
+	"lat_0=45"
+	"lon_0=-100"
+	"x_0=0"
+	"y_0=0"
+	"a=6370997"
+	"b=6370997"
+	"units=m"
+	"no_defs"
+        END
+        METADATA
+            "wms_title"                  "Firescars 2000-2010"
+            "wms_abstract"               "Firescars 2000-2010"
+	     "wcs_label"                  "firescars WCS"
+	     "wcs_rangeset_name"          "firescars WCS"
+	     "wcs_rangeset_label"         "firescars WCS"
+        END  # end METADATA
+    END # end LAYER
+
 
 END # end MAP
