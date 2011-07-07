@@ -94,13 +94,15 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
         group_abstract = "Layers uploaded by RSAC-FHTET"
         colormapfile   = "rsac_fhtet_percent_change_cmap.cmap"
         colormapcsv    = "rsac_fhtet_percent_change_cmap.csv"
-        keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
+        #keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
+        keyimage       = "RSAC-FHTET_CT_7-6-2011_clipped.png"
     else:
         group          = "EFETAC-NASA"
         group_abstract = "Layers uploaded by EFETAC-NASA"
         colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
         colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
-        keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
+        #keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
+        keyimage       = "TACs_NASA_CT_7-6-2011_clipped.png"
 
 
 
@@ -152,13 +154,15 @@ for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".t
             group_abstract = "Layers uploaded by RSAC-FHTET"
             colormapfile   = "rsac_fhtet_percent_change_cmap.cmap"
             colormapcsv    = "rsac_fhtet_percent_change_cmap.csv"
-            keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
+            #keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
+            keyimage       = "RSAC-FHTET_CT_7-6-2011_clipped.png"
         else:
             group = "EFETAC-NASA"
             group_abstract = "Layers uploaded by EFETAC-NASA"
             colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
             colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
-            keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
+            #keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
+            keyimage       = "TACs_NASA_CT_7-6-2011_clipped.png"
         tiflist.append({ 'TIF'             : tif,
                          'PROJVALID'       : len(proj) > 0,
                          'PROJ'            : formatproj(proj,10),
