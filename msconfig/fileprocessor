@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
-import os,subprocess,re,shutil;
-from datetime import datetime, date, timedelta;
+import os, re, sys
+from datetime import datetime, date, timedelta
 
 try:
     from Config import *
@@ -11,94 +11,169 @@ except:
     print "as a starting point --- make a copy of that file called 'Config.py', and edit appropriately."
     exit(-1)
 
-standardPattern = '(' + DATA_DIR + r'/.+/.+/)(\d+)_(\d+)\.(t[a-z][a-z])$'
-retroPattern    =       DATA_DIR + r'/.+/.+/(.+)/(\d+)_(\d+)_\d+\.(t[a-z][a-z])$'
-retroFolderPattern = r'x_fcav_retro_viewer_(.+)_bl'
+curprev_prefix = ["current", "previous1", "previous2"]
 
-timeprefixes = ['current','previous1','previous2']
+linkgroups = [
+#    {
+#        'srcdir'             : directory to look in (recursively) for data files 
+#        'regex'              : regular expression pattern of files to create links for
+#        'filter_functions'   : list of filter functions for reducing the list of files to create links for;
+#                               each of the functions in this list should take a list argument and return a list
+#        'dstdir'             : destination directory for symlinks
+#        'linkname_generator' : function(i,f,m) for generating link name; i = 0-based number of file in list,
+#                               f = filename, m = re match object for filename f matching regex
+#        'reps'               : "repititions" --- list of patterns and replacements to use when repeating symlink creation
+#    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "rsac_fhtet"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2009_bl"),
+        'regex'              : r'_bl/(\d{8})_(\d{2})_(\d{4})\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/1YrBaseline"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2007-2009_bl"),
+        'regex'              : r'_bl/(\d{8})_(\d{2})_(\d{4})\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/3YrBaseline"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2003-2009_bl"),
+        'regex'              : r'_bl/(\d{8})_(\d{2})_(\d{4})\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/AllYrBaseline"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    }
+]
 
-def rfind(dir, pattern):
-    return subprocess.Popen(['find', dir, '-name', pattern, '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
+def date_period_longform(YYYYMMDD, PP):
+    """Return a string of the form "monthaN_monthbM" from YYYYMMDD and PP (period length) values.
 
-def currentTifs(dir, filePattern):
-    tifs = []
-    for line in rfind(dir, '*.tif'):
-        if (len(line) > 0) and (re.search(filePattern, line) != None):
-            tifs.append(line)
-    tifs.sort()
-    current = [tifs[-1], tifs[-2], tifs[-3]]
-    return current
+    This function takes two parameters, YYYYMMDD, which should be an
+    (exactly) 8-character string representing a year-day-month value,
+    and PP, which should be an int given a period length.  Returns a
+    string of the form "monthaN_monthbM", where montha and monthb are
+    month names spelled out in their long form, all in lowercase
+    letters, and N and M are 1 or 2 digit dates in those months.  The
+    monthbM part will correspond to the month (MM) and day (DD) part
+    of the input parameter YYYYMMDD, and the monthaN part will
+    correspond to a date that is PP days earlier.  For example:
 
-def copyFile(i, file, destdir, whichPattern):
-    destname = compute_stupid_filename(i, file, whichPattern)
-    destpath = destdir + "/" + destname
-    if os.path.exists(destpath):
-        os.remove(destpath)
-    os.symlink(file, destpath)
+          period_longform("20110710",  5) ==> "july6_july10"
+          period_longform("20100305", 24) ==> "february10_march5"
+    """
+    endyear   = int(YYYYMMDD[0:4])
+    endmonth  = int(YYYYMMDD[4:6])
+    endday    = int(YYYYMMDD[6:8])
+    enddate   = date(endyear, endmonth, endday)
+    startdate = enddate - timedelta(PP-1)
+    monthbM   = enddate.strftime("%B").lower() + ("%1d" % (int(enddate.strftime("%d"))))
+    monthaN   = startdate.strftime("%B").lower() + ("%1d" % (int(startdate.strftime("%d"))))
+    return "%s_%s" % (monthaN, monthbM)
 
-def compute_stupid_filename(i, smart_filename, whichPattern):
-    if whichPattern == 'standard':
-    	m = re.search(standardPattern, smart_filename)
-    	prefix = m.group(1)
-	yyyymmdd = m.group(2)
-	pp = int(m.group(3))
-	suffix = m.group(4)
-    else:
-        m = re.search(retroPattern, smart_filename)
-        prefix = m.group(1)
-	t = re.search(retroFolderPattern, prefix)
-	retroPrefix = t.group(1)
-        yyyymmdd = m.group(2)
-        pp = int(m.group(3))
-        suffix = m.group(4)	
+def listfiles(DIR):
+    """Return a list of all the files in a directory tree.
 
-    end = datetime.strptime(yyyymmdd,"%Y%m%d")
-    endy = int(end.strftime("%Y"))
-    endm = int(end.strftime("%m"))
-    endd = int(end.strftime("%d"))
-    enddate = date(endy, endm, endd)
-    delta = timedelta(days=pp-1)
-    start = enddate - delta
-    stupidend = end.strftime("%B").lower() + ("%1d" % (int(end.strftime("%d"))))
-    stupidstart = start.strftime("%B").lower() + ("%1d" % (int(start.strftime("%d"))))
-    endform = "%s_%s.%s" % (stupidstart, stupidend, suffix)
+    Recurse through DIR and all its subdirectories to find all the
+    plain files (not directories, not symlinks, etc), and return their
+    names (as strings) in a list.
+    """
+    files = []
+    for item in os.listdir(DIR):
+        relitem = os.path.join(DIR,item)
+        if os.path.isdir(relitem):
+            files.extend(listfiles(relitem))
+        else:
+            files.append(relitem)
+    return files
 
-    return timeprefixes[i] + "_" + endform
-  
-#    if whichPattern == 'standard':
-#    	return timeprefixes[i] + "_" + endform
-#    else:
-#    	return retroPrefix + "_" + timeprefixes[i] + "_" + endform
+#
+# Now we do the work:
+#
+for linkgroup in linkgroups:
 
-def ensureDir(dir):
-    if not os.path.exists(dir):
-        os.mkdir(dir)
+    #
+    # make sure the link destination directory exists
+    #
+    if not os.path.exists(linkgroup['dstdir']):
+        os.makedirs(linkgroup['dstdir'])
 
-def do_link_group(group_link_dir, group_data_dir, whichPattern):
-    os.system("/bin/rm -f %s/*" % group_link_dir);
-    ensureDir(group_link_dir)
-    if whichPattern == 'standard':
-    	filePattern = standardPattern
-    else:
-	filePattern = retroPattern
-    tifs = currentTifs(group_data_dir, filePattern)
-    for i in range(0,len(tifs)):
-        copyFile(i, tifs[i], group_link_dir, whichPattern)
-        tfw = re.sub(r'\.tif$', '.tfw', tifs[i])
-        copyFile(i, tfw, group_link_dir, whichPattern)
+    #
+    # remove any existing symlinks from the destination directory
+    #
+    for link in os.listdir(linkgroup['dstdir']):
+        linkpath = os.path.join(linkgroup['dstdir'], link)
+        if os.path.islink(linkpath):
+            os.remove(linkpath)
 
-ensureDir(LINK_TARGET_DIR)
-ensureDir(LINK_TARGET_DIR + "/efetac_nasa-retro")
+    #
+    # initialize the list of files to those in the source directory matching the given regex
+    #
+    files = [f for f in listfiles(linkgroup['srcdir']) if re.search(linkgroup['regex'],f)]
 
-do_link_group("%s/rsac_fhtet" % LINK_TARGET_DIR,  "%s/rsac_fhtet/ews" % DATA_DIR, 'standard')
-do_link_group("%s/efetac_nasa" % LINK_TARGET_DIR,  "%s/efetac_nasa/ews" % DATA_DIR, 'standard')
+    #
+    # apply all filter functions, in order, to the list of files
+    #
+    for filter in linkgroup['filter_functions']:
+        files = filter(files)
 
-#Retro: 1 yr
-do_link_group("%s/efetac_nasa-retro/1YrBaseline" % LINK_TARGET_DIR,  "%s/efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2009_bl" % DATA_DIR, 'retro')
+    #
+    # for each file remaining in the list...
+    #
+    for i in range(0,len(files)):
 
-#Retro: 3 yrs
-do_link_group("%s/efetac_nasa-retro/3YrBaseline" % LINK_TARGET_DIR,  "%s/efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2007-2009_bl" % DATA_DIR, 'retro')
+        #
+        # generate the name of the symlink for the file
+        #
+        f = files[i]
+        m = re.search(linkgroup['regex'], f)
+        dst = linkgroup['linkname_generator'](i,f,m)
 
-#Retro: All yrs
-do_link_group("%s/efetac_nasa-retro/AllYrBaseline" % LINK_TARGET_DIR,  "%s/efetac_nasa/ews/x_fcav_retro_viewer_2010_vs_2003-2009_bl" % DATA_DIR, 'retro')
+        #
+        # create the symlink
+        #
+        dstpath = os.path.join(linkgroup['dstdir'], dst)
+        os.symlink(f,dstpath)
 
+        #
+        # and finally, repeat for any 'reps':
+        #
+        for rep in linkgroup['reps']:
+            rf       = re.sub(rep['pattern'], rep['replacement'], f)
+            rdstpath = re.sub(rep['pattern'], rep['replacement'], dstpath)
+            os.symlink(rf,rdstpath)
