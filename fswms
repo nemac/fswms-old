@@ -39,9 +39,12 @@ def version_exists(version):
     return False
 
 def listfiles(dir):
-   # Assuming that dir is a fswms directory, return a list of the files (files only --- not directories) it contains,
-   # filterd to include only the files that should be included in a deployment.  This omits certain files, such as
-   # any files in a subversion (.svn) subdirectory, emacs backup (*~) files, and this fswms script.
+   # Assuming that dir is a fswms directory, return a list of the
+   # files (files only --- not directories) it contains, filterd to
+   # include only the files that should be included in a deployment.
+   # This omits certain files, such as any files in a subversion
+   # (.svn) subdirectory, emacs backup (*~) files, and this fswms
+   # script.
    files = [re.sub(r'^'+dir+'/', '', f)
             for f in subprocess.Popen(['find', dir, '-type', 'f', '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
             if re.search('.svn', f) == None]
