@@ -97,8 +97,8 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
         #keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
         keyimage       = "RSAC-FHTET_CT_7-6-2011_clipped.png"
     else:
-        group          = "EFETAC-NASA"
-        group_abstract = "Layers uploaded by EFETAC-NASA"
+        group          = "TACs-NASA"
+        group_abstract = "Layers uploaded by TACs-NASA"
         colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
         colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
         #keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
@@ -157,8 +157,8 @@ for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".t
             #keyimage       = "rsac-fhtet-legend-v3-181x277-2011-06-24.png"
             keyimage       = "RSAC-FHTET_CT_7-6-2011_clipped.png"
         else:
-            group = "EFETAC-NASA"
-            group_abstract = "Layers uploaded by EFETAC-NASA"
+            group = "TACs-NASA"
+            group_abstract = "Layers uploaded by TACs-NASA"
             colormapfile   = "efetac_nasa_percent_change_cmap.cmap"
             colormapcsv    = "efetac_nasa_percent_change_cmap.csv"
             #keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"

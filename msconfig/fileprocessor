@@ -24,17 +24,103 @@ linkgroups = [
 #                               f = filename, m = re match object for filename f matching regex
 #        'reps'               : "repititions" --- list of patterns and replacements to use when repeating symlink creation
 #    },
+
+## FOR FDM PICKUP
     {
         'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
-        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
+        'regex'              : r'/ews/(\d{8})_(\d{2})_3yr\.tif$',
         'filter_functions'   : [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
             ],
         'dstdir'             : os.path.join(LINK_TARGET_DIR, "rsac_fhtet"),
-        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'linkname_generator' : lambda i,f,m: "%s_%s_3yr.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
         'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
     },
+
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})_5yr\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "rsac_fhtet"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_5yr.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})_3yr_bd\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "rsac_fhtet"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_3yr_bd.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})_5yr_bd\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "rsac_fhtet"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_5yr_bd.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+
+############### EFETAC NASA
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/3Year"),
+        'regex'              : r'/(\d{8})_(\d{2})_2008_max\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_3yr.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/3Year"),
+        'regex'              : r'/(\d{8})_(\d{2})_2008_max_bd\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_3yr_bd.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/5Year"),
+        'regex'              : r'/(\d{8})_(\d{2})_2006_max\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_5yr.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+
+    {
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/5Year"),
+        'regex'              : r'/(\d{8})_(\d{2})_2006_max_bd\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s_5yr_bd.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+
+
 ###    {
 ###        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/ews"),
 ###        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
@@ -80,15 +166,16 @@ linkgroups = [
 ###        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
 ###   },
 
+
+##  FOR VIEWER
     {
-        # /flood/fsdata/efetac_nasa/AllYear/20110601_24_2003_max.tfw
-        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/AllYear"),
-        'regex'              : r'/AllYear/(\d{8})_(\d{2})_\d{4}_max\.tif$',
+        'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
+        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
         'filter_functions'   : [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
             ],
-        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa"),
+        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "rsac_fhtet"),
         'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
         'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
     },
@@ -101,7 +188,20 @@ linkgroups = [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
             ],
-        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/AllYrBaseline"),
+        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "efetac_nasa"),
+        'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
+        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
+    },
+
+    {
+        # /flood/fsdata/efetac_nasa/AllYear/20110601_24_2003_max.tfw
+        'srcdir'             : os.path.join(DATA_DIR, "efetac_nasa/AllYear"),
+        'regex'              : r'/AllYear/(\d{8})_(\d{2})_\d{4}_max\.tif$',
+        'filter_functions'   : [
+            lambda list : sorted(list),
+            lambda list : list[-3:][::-1]
+            ],
+        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "efetac_nasa-retro/AllYrBaseline"),
         'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
         'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
     },
@@ -113,7 +213,7 @@ linkgroups = [
 ###            lambda list : sorted(list),
 ###            lambda list : list[-3:][::-1]
 ###            ],
-###        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/AllYrBaseline"),
+###        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "efetac_nasa-retro/AllYrBaseline"),
 ###        'linkname_generator' : lambda i,f,m: "%s_%s_med.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
 ###        'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
 ###    },
@@ -125,7 +225,7 @@ linkgroups = [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
             ],
-        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/1YrBaseline"),
+        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "efetac_nasa-retro/1YrBaseline"),
         'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
         'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
     },
@@ -137,7 +237,7 @@ linkgroups = [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
             ],
-        'dstdir'             : os.path.join(LINK_TARGET_DIR, "efetac_nasa-retro/3YrBaseline"),
+        'dstdir'             : os.path.join(VIEWER_LINK_TARGET_DIR, "efetac_nasa-retro/3YrBaseline"),
         'linkname_generator' : lambda i,f,m: "%s_%s.tif" % (curprev_prefix[i], date_period_longform(m.group(1),int(m.group(2)))),
         'reps'               : [ { 'pattern' : r'\.tif$', 'replacement' : '.tfw' } ]
     }

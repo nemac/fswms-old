@@ -13,6 +13,10 @@ DATA_DIR        = "/flood/fsdata"
 LINK_TARGET_DIR = "linkdir"
 #LINK_TARGET_DIR = "fsdata/fdm"
 
+# The directory in which to put simlinks for the WMS makemap script
+VIEWER_LINK_TARGET_DIR = "linkdir/viewer"
+#VIEWER_LINK_TARGET_DIR = "fsdata/fdm"
+
 # The directory in which to look for tif files to create the layers in the WMS
-# (this should normally just be set to LINK_TARGET_DIR from above):
-LAYER_DATA_DIR  = LINK_TARGET_DIR
+# (this should normally just be set to VIEWER_LINK_TARGET_DIR from above):
+LAYER_DATA_DIR  = VIEWER_LINK_TARGET_DIR
