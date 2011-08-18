@@ -170,7 +170,7 @@ linkgroups = [
 ##  FOR VIEWER
     {
         'srcdir'             : os.path.join(DATA_DIR, "rsac_fhtet/ews"),
-        'regex'              : r'/ews/(\d{8})_(\d{2})\.tif$',
+        'regex'              : r'/ews/(\d{8})_(\d{2})_3yr\.tif$',
         'filter_functions'   : [
             lambda list : sorted(list),
             lambda list : list[-3:][::-1]
