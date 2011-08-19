@@ -191,7 +191,7 @@ for tifdict in tiflist:
     if tifdict['PROJVALID']:
         LAYERS = LAYERS + layerTemplate.render( tifdict )
 
-# write out two new mapfiles: ews.map, using EPSG 3785 (WebMercator), and ewswgs84, using EPSG 4326:
+# write out three new mapfiles: ews.map, using EPSG 3785 (WebMercator), and ewswgs84, using EPSG 4326, and ewswcs, for serving WCS (using MapServer 6)
 SERVICE_NAME = "ews"
 f_new = open("ews.map", "w")
 f_new.write( mapTemplate.render( {
@@ -230,6 +230,25 @@ f_new.write( mapTemplate.render( {
             } ) )
 f_new.close()
 
+f_new = open("ewswcs.map", "w")
+SERVICE_NAME = "ewswcs"
+f_new.write( mapTemplate.render( {
+            'LAYERS'                  : LAYERS,
+#           'EPSG'                    : "2163",
+            'WMS_SRS'                 : "EPSG:2163",
+            'MAPFILE_PROJECTION'      : '"init=epsg:2163"',
+            'SERVICE_NAME'            : SERVICE_NAME,
+            'TEMP_FILE_PREFIX'        : "ms_%s" % (SERVICE_NAME),
+            'MAPFILE'                 : "%s/msconfig/%s.map" % (BASE_DIR, SERVICE_NAME),
+            'OWS_TITLE'               : "NEMAC %s WCS" % (SERVICE_NAME),
+            'OWS_ABSTRACT'            : "NEMAC %s WCS" % (SERVICE_NAME),
+            'OWS_KEYWORDLIST'         : "mapserver,ogc,%s" % (SERVICE_NAME),
+            'SERVICE_URL'             : "%s/%s" % (SERVER_URL, SERVICE_NAME),
+            'MS_ERRORFILE'            : "../logs/%s.log" % (SERVICE_NAME),
+            'WFS_NAMESPACE_PREFIX'    : SERVICE_NAME
+            } ) )
+f_new.close()
+
 FSWMS_VERSION = subprocess.Popen(['../version'], stdout=subprocess.PIPE).communicate()[0].strip()
 
 # write out the html file:
@@ -241,6 +260,11 @@ WMS addresses are:
 <ul>
 <li><a href="#{SERVER_URL}/ews">#{SERVER_URL}/ews</a> (WebMercator projection) [ <a href="#{SERVER_URL}/ews?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
 <li><a href="#{SERVER_URL}/ewswgs84">#{SERVER_URL}/ewswgs84</a> (WGS 84) [ <a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
+</ul>
+<p>
+WCS address is:
+<ul>
+<li><a href="#{SERVER_URL}/ewswcs">#{SERVER_URL}/ewscs</a> (EPSG 2163) [ <a href="#{SERVER_URL}/ewswcs?SERVICE=WCS&REQUEST=GetCapabilities">GetCapabilities</a> ]
 </ul>
 <p>
 Currently uploaded layers are:
