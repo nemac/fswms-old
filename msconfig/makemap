@@ -251,6 +251,8 @@ f_new.close()
 
 FSWMS_VERSION = subprocess.Popen(['../version'], stdout=subprocess.PIPE).communicate()[0].strip()
 
+os.system("(cd ../html ; ln -s ../msconfig/ews.map . ; ln -s ../msconfig/ewswgs84.map . ; ln -s ../msconfig/ewswcs.map .)")
+
 # write out the html file:
 f_out = open("../html/index.html", "w");
 f_out.write(interp("""
@@ -258,13 +260,13 @@ This is FSWMS version #{FSWMS_VERSION}.
 <p>
 WMS addresses are:
 <ul>
-<li><a href="#{SERVER_URL}/ews">#{SERVER_URL}/ews</a> (WebMercator projection) [ <a href="#{SERVER_URL}/ews?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
-<li><a href="#{SERVER_URL}/ewswgs84">#{SERVER_URL}/ewswgs84</a> (WGS 84) [ <a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ]
+<li><a href="#{SERVER_URL}/ews">#{SERVER_URL}/ews</a> (WebMercator projection) [ <a href="#{SERVER_URL}/ews?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ] [ <a href="ews.map">mapfile</a> ]
+<li><a href="#{SERVER_URL}/ewswgs84">#{SERVER_URL}/ewswgs84</a> (WGS 84) [ <a href="#{SERVER_URL}/ewswgs84?SERVICE=WMS&REQUEST=GetCapabilities">GetCapabilities</a> ] [ <a href="ewswgs84.map">mapfile</a> ]
 </ul>
 <p>
 WCS address is:
 <ul>
-<li><a href="#{SERVER_URL}/ewswcs">#{SERVER_URL}/ewscs</a> (EPSG 2163) [ <a href="#{SERVER_URL}/ewswcs?SERVICE=WCS&REQUEST=GetCapabilities">GetCapabilities</a> ]
+<li><a href="#{SERVER_URL}/ewswcs">#{SERVER_URL}/ewscs</a> (EPSG 2163) [ <a href="#{SERVER_URL}/ewswcs?SERVICE=WCS&REQUEST=GetCapabilities">GetCapabilities</a> ] [ <a href="ewswcs.map">mapfile</a> ]
 </ul>
 <p>
 Currently uploaded layers are:
