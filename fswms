@@ -30,10 +30,33 @@ DIRS_TO_ENSURE = [
    {'dir':'logs',      'perms':'a+rwx'}
 ]
 
-VERSION_LIST = [re.sub(r'^fswms-(.*)/$',r'\1',x) for x in subprocess.Popen(['svn', 'list', SVN_ROOT + '/tags'], stdout=subprocess.PIPE).communicate()[0].split('\n') if x != '']
+def compare_versions(a,b):
+    try:
+        [amajor,aminor] = [int(x) for x in a.split('.')]
+        [bmajor,bminor] = [int(x) for x in b.split('.')]
+    except:
+        if a < b:
+            return -1
+        elif a > b:
+            return 1
+        else:
+            return 0
+    if amajor < bmajor:
+        return -1
+    elif amajor > bmajor:
+        return 1
+    else:
+        if aminor < bminor:
+            return -1
+        elif aminor > bminor:
+            return 1
+    return 0
+
+def version_list():
+    return sorted([re.sub(r'^fswms-(.*)/$',r'\1',x) for x in subprocess.Popen(['svn', 'list', SVN_ROOT + '/tags'], stdout=subprocess.PIPE).communicate()[0].split('\n') if x != ''], cmp=compare_versions)
 
 def version_exists(version):
-    for v in VERSION_LIST:
+    for v in version_list():
         if v == version:
             return True
     return False
@@ -157,7 +180,11 @@ def deploy(DEPLOY_DIR):
     #
     # Change the group ownership of the whole deploy dir to 'fswms':
     #
-    os.system("(cd %s ; chgrp -R fswms .)" % DEPLOY_DIR)
+    if os.environ['HOSTNAME'] == "rain":
+        # if we're on server 'rain', change user ownership too!!!
+        os.system("(cd %s ; chown -R fswms.fswms .)" % DEPLOY_DIR)
+    else:
+        os.system("(cd %s ; chgrp -R fswms .)" % DEPLOY_DIR)
 
     #
     # Make the whole DEPLOY_DIR directory tree group writeable:
@@ -188,7 +215,7 @@ except:
     usage()
 
 if command == "list":
-    print ("The versions of fswms currently defined in the subversion repository are: %s" % ", ".join(VERSION_LIST))
+    print ("The versions of fswms currently defined in the subversion repository are: %s" % ", ".join(version_list()))
            
 elif command == "create":
     version = sys.argv[2]
@@ -208,10 +235,21 @@ elif command == "delete":
     os.system("svn --quiet -m 'remove tags/%s' rm %s/tags/%s" % (tag,SVN_ROOT,tag))
     print "deleted %s " % tag
 
+elif command == "deploy-dir":
+    DEPLOY_DIR = sys.argv[2]
+    tag = sys.argv[3]
+    cwd = os.getcwd()
+    os.chdir(".stage/%s" % tag)
+    deploy(DEPLOY_DIR)
+    os.chdir(cwd)
+
 elif command == "deploy":
     version = sys.argv[2]
     if not version_exists(version):
         print "Error: version %s does not exist in the subversion repository" % version
+        exit(-1)
+    if compare_versions(version, "1.11") < 0 and os.environ['HOSTNAME'] == "rain":
+        print "Versions prior to fswms-1.11 cannot be deployed on server 'rain'"
         exit(-1)
     tag = "fswms-%s" % version
     os.system("/bin/rm -rf .stage")
@@ -219,12 +257,15 @@ elif command == "deploy":
     print "getting a copy of %s..." % tag
     os.system("cd .stage ; svn --quiet co %s/tags/%s" % (SVN_ROOT,tag))
     print "deploying %s to %s..." % (tag,DEPLOY_DIR)
-    cwd = os.getcwd()
-    os.chdir(".stage/%s" % tag)
-    deploy(DEPLOY_DIR)
-    os.chdir(cwd)
+    if os.environ['HOSTNAME'] == "rain":
+        os.system("sudo ./fswms deploy-dir %s %s" % (DEPLOY_DIR,tag))
+    else:
+        os.system("./fswms deploy-dir %s %s" % (DEPLOY_DIR,tag))
     print "running %s/msconfig/fscron..." % DEPLOY_DIR
-    os.system("cd %s/msconfig ; ./fscron" % DEPLOY_DIR)
+    if os.environ['HOSTNAME'] == "rain":
+        os.system("cd %s/msconfig ; sudo su fswms ./fscron" % DEPLOY_DIR)
+    else:
+        os.system("cd %s/msconfig ; ./fscron" % DEPLOY_DIR)
     print "cleaning up..."
     os.system("/bin/rm -rf .stage")
     print "done."
