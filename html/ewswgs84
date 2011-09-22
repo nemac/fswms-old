@@ -1,25 +1,14 @@
-#! /bin/bash
+#! /usr/bin/python
 
-#MAPSERV=/var/fswms.nemac.org/cgi-bin/mapserv-5.6.5.exe
-#MAPFILE=/var/fswms.nemac.org/msconfig/ewswgs84.map
+import sys
+sys.path.append("../msconfig")
+import CGIInjector
 
-if grep -q CentOS /etc/redhat-release ; then
-  MAPSERV=../cgi-bin/mapserv-5.6.5-CentOS.exe
-else
-  MAPSERV=../cgi-bin/mapserv-5.6.5.exe
-fi
+MAPFILE = '../msconfig/ewswgs84.map'
 
-MAPFILE=../msconfig/ewswgs84.map
+if CGIInjector.this_computer_is_running_centos():
+    MAPSERV = '../cgi-bin/mapserv-5.6.5-CentOS.exe'
+else:
+    MAPSERV = '../cgi-bin/mapserv-5.6.5.exe'
 
-if [ "${REQUEST_METHOD}" = "GET" ]; then
-  if [ -z "${QUERY_STRING}" ]; then
-    QUERY_STRING="map=${MAPFILE}"
-  else
-    QUERY_STRING="map=${MAPFILE}&${QUERY_STRING}"
-  fi
-  exec ${MAPSERV}
-else
-  echo "Sorry, I only understand GET requests."
-fi
-
-exit 1
+CGIInjector.mapserv(MAPFILE, MAPSERV)
