@@ -2,13 +2,13 @@
 
 import sys
 sys.path.append("../msconfig")
-import CGIInjector
+import CGIUtils
 
 MAPFILE = '../msconfig/ews.map'
 
-if CGIInjector.this_computer_is_running_centos():
+if CGIUtils.this_computer_is_running_centos():
     MAPSERV = '../cgi-bin/mapserv-5.6.5-CentOS.exe'
 else:
     MAPSERV = '../cgi-bin/mapserv-5.6.5.exe'
 
-CGIInjector.mapserv(MAPFILE, MAPSERV)
+CGIUtils.mapserv_inject_mapfile(MAPFILE, MAPSERV)
