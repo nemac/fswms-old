@@ -9,6 +9,8 @@
 
 ./makemap > ../logs/makemap.log  2>&1
 
+./makeviewerconfig
+
 #./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 efetac_nasa_percent_change_cmap.csv legendicons/efetac_nasa.png
 #./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 rsac_fhtet_percent_change_cmap.csv legendicons/rsac_fhtet.png
 #./makeicon -q -W 137 -p 0 -h 15 -f 8 -t '% change' -l -100 -r 100 -c 'RSAC-FHTET_current' rsac_fhtet_percent_change_cmap.csv legendicons/RSAC-FHTET_current.png

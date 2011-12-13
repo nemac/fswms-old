@@ -1,0 +1,29 @@
+#! /usr/bin/python
+
+try:
+    from Config import *
+except:
+    print "Cannot find local settings file 'Config.py'.  You need to create a Config.py file that contains"
+    print "settings appropriate for this copy of the FSWMS project.  You can use the file 'Config.py.template'"
+    print "as a starting point --- make a copy of that file called 'Config.py', and edit appropriately."
+    exit(-1)
+
+class Template:
+    def __init__(self, file):
+        f = open(file, "r")
+        self.contents = ""
+        for line in f:
+            self.contents = self.contents + line
+        f.close
+    def render(self, dict):
+        return self.contents % dict
+
+
+template = Template("ews_config.tpl.xml")
+
+f = open("../html/view/config/ews_config.xml", "w")
+f.write(template.render( {
+            'SERVER_URL'            : SERVER_URL,
+            'VIEWER_DEPLOY_DIR_URL' : VIEWER_DEPLOY_DIR_URL
+            }))
+f.close()
