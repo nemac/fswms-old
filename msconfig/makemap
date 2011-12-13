@@ -259,16 +259,37 @@ f_new.close()
 
 
 ###
-### Create the ews1year.map, ews3year.map, and ewstruecolor.map files:
+### Create the ews1year.map file:
 ###
-for basename in ['ews1year', 'ews3year', 'ewstruecolor']:
-    template = Template(basename+".tpl.map")
-    f_new = open(basename+".map", "w")
-    f_new.write( template.render( {
-                'DATA_DIR'     : DATA_DIR,
-                'SERVICE_URL'  : "%s/%s" % (SERVER_URL, basename)
-                } ) )
-    f_new.close()
+template = Template("ews1year.tpl.map")
+f_new = open("ews1year.map", "w")
+f_new.write( template.render( {
+            'DATA_DIR'     : DATA_DIR,
+            'SERVICE_URL'  : "%s/%s" % (SERVER_URL, "ews1year")
+            } ) )
+f_new.close()
+
+###
+### Create the ews3year.map file:
+###
+template = Template("ews3year.tpl.map")
+f_new = open("ews3year.map", "w")
+f_new.write( template.render( {
+            'DATA_DIR'     : DATA_DIR,
+            'SERVICE_URL'  : "%s/%s" % (SERVER_URL, "ews3year")
+            } ) )
+f_new.close()
+
+###
+### Create the ewstruecolor.map file:
+###
+template = Template("ewstruecolor.tpl.map")
+f_new = open("ewstruecolor.map", "w")
+f_new.write( template.render( {
+            'DATA_DIR'     : DATA_DIR,
+            'SERVICE_URL'  : "%s/%s" % (SERVER_URL, "ewstruecolor")
+            } ) )
+f_new.close()
 
 #################################################################################################
 
