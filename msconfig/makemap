@@ -1,5 +1,21 @@
 #! /usr/bin/python
 
+### creates each of the following map files
+###    ews.map
+###    ewswgs84.map
+###    ewswcs.map
+### by looping over all tif files found in
+###    * LAYER_DATA_DIR
+###    * DATA_DIR/efetac_nasa/ews
+### 
+### 
+### added last night:
+### 
+###  * create ews1year.map using template ews1year.tpl.map
+###  * create ews3year.map using template ews3year.tpl.map
+###  * create ewstruecolor.map using template ewstruecolor.tpl.map
+
+
 ###
 ### imports
 ###
