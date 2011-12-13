@@ -1,7 +1,15 @@
 #! /usr/bin/python
 
+###
+### imports
+###
+
 from osgeo import gdal, osr
 import sys, os, subprocess, datetime, re, shutil;
+
+###
+### config
+###
 
 try:
     from Config import *
@@ -11,12 +19,19 @@ except:
     print "as a starting point --- make a copy of that file called 'Config.py', and edit appropriately."
     exit(-1)
 
+###
+### function definitions
+###
+
 def rfind(dir, pattern):
-    lines = subprocess.Popen(['find', dir, '-name', pattern, '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
+    """Recursive find: returns a list of all files located in a directory or any of its descendent directories,
+    and whose names match a regular expression pattern."""
     files = []
-    for line in lines:
-        if len(line) > 0:
-            files.append(line)
+    for file in os.listdir(dir):
+        if os.path.isdir(os.path.join(dir, file)):
+            files = files + rfind(os.path.join(dir,file), pattern)
+        if re.match(pattern, file):
+            files.append(os.path.join(dir,file))
     return files
 
 def getproj(tif):
@@ -65,17 +80,16 @@ class Template:
         return self.contents % dict
 
 
-mapTemplate = Template("ews.map.tmpl")
-
-layerTemplate = Template("ews.layer.tmpl")
-
-# tiflist is a list that will hold a dictionary for each tif file; initialize tiflist to the empty list here:
+###
+### initialize tiflist: array of dict objects holding info about each layer in mapfile(s)
+###
 tiflist = []
 
+###
+### create a tiflist entry for each .tif file in LAYER_DATA_DIR:
+###
 retroPattern = r'-retro/(.+)/'
-
-# now loop over each tif file returned by the listtifs() function, and append a dictionary to tiflist for each one:
-for tif in rfind(LAYER_DATA_DIR, '*.tif'):
+for tif in rfind(LAYER_DATA_DIR, r'^.*\.tif$'):
     tif = re.sub('^' + LAYER_DATA_DIR + '/', '', tif)
     m = re.search(retroPattern, tif)
     if m != None:
@@ -104,22 +118,9 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
         #keyimage       = "tacs-nasa-legend-v3-181x277-2011-06-24.png"
         keyimage       = "TACs_NASA_CT_7-6-2011_clipped.png"
 
-
-
     modDate = getModDate(tif_fullpath)
     nameform = re.sub(r'^.*/', '', tif)
     nameformStart = re.sub(r'_.*$', '', nameform)
-#    if nameformStart.isdigit() == True:
-#        print "ZOMGGGGG"
-#	layerNameForm = nameform
-#    	retroForm = r'.+_(.+)_.+_.+$'
-#	rs = re.search(retroForm, nameform)
-#	retroLayerType = rs.group(1)
-#	print "Layer %s is of layer type %s" % (tif, retroLayerType)
-#	legendFile = "legendicons/" + group + "_" + retroLayerType + ".png"
-#	
-#    else:
-    #legendFile = "legendicons/" + group + "_" + re.sub(r'_.*$', '', nameform) + ".png"
     layerNameForm = nameformStart
 
     tiflist.append({ 'TIF'             : tif,
@@ -139,8 +140,9 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
 		     'MODDATE'	       : modDate
                      })
 
-######################################
-
+###
+### create a tiflist entry for each .tif file in DATA_DIR+"/efetac_nasa/ews:
+###
 ARCHIVE_DIR = DATA_DIR + "/efetac_nasa/ews"
 for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".tif")], reverse=False):
     try:
@@ -183,15 +185,20 @@ for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".t
 
 ######################################
 
-
-
-# build the LAYERS string by appending a rendered layer template for each valid layer:
+###
+### build the LAYERS string by appending a rendered layer template for each valid layer:
+###
+layerTemplate = Template("ews.layer.tmpl")
 LAYERS = ""
 for tifdict in tiflist:
     if tifdict['PROJVALID']:
         LAYERS = LAYERS + layerTemplate.render( tifdict )
 
-# write out three new mapfiles: ews.map, using EPSG 3785 (WebMercator), and ewswgs84, using EPSG 4326, and ewswcs, for serving WCS (using MapServer 6)
+###
+### write out three new mapfiles: ews.map, using EPSG 3785 (WebMercator),
+### and ewswgs84, using EPSG 4326, and ewswcs, for serving WCS (using MapServer 6):
+###
+mapTemplate = Template("ews.map.tmpl")
 SERVICE_NAME = "ews"
 f_new = open("ews.map", "w")
 f_new.write( mapTemplate.render( {
@@ -249,14 +256,39 @@ f_new.write( mapTemplate.render( {
             } ) )
 f_new.close()
 
+
+
+###
+### Create the ews1year.map, ews3year.map, and ewstruecolor.map files:
+###
+for basename in ['ews1year', 'ews3year', 'ewstruecolor']:
+    template = Template(basename+".tpl.map")
+    f_new = open(basename+".map", "w")
+    f_new.write( template.render( {
+                'DATA_DIR'     : DATA_DIR,
+                'SERVICE_URL'  : "%s/%s" % (SERVER_URL, basename)
+                } ) )
+    f_new.close()
+
+#################################################################################################
+
+###
+### Create symlinks for the map files, and change a few permission settings
+###
+os.system("(cd ../html ; ln -f -s ../msconfig/ews.map . ; ln -f -s ../msconfig/ewswgs84.map . ; ln -f -s ../msconfig/ewswcs.map .)")
+os.system("chmod a+w ../logs");
+os.system("chmod a+w ../logs/*.log > /dev/null 2>&1");
+
+###
+### write out the html/index.html file:
+###
 FSWMS_VERSION = subprocess.Popen(['../version'], stdout=subprocess.PIPE).communicate()[0].strip()
-
-os.system("(cd ../html ; ln -s ../msconfig/ews.map . ; ln -s ../msconfig/ewswgs84.map . ; ln -s ../msconfig/ewswcs.map .)")
-
-# write out the html file:
 f_out = open("../html/index.html", "w");
 f_out.write(interp("""
-This is FSWMS version #{FSWMS_VERSION}.
+<table width="100%"><tr>
+<td align="left">This is FSWMS version #{FSWMS_VERSION}.</td>
+<td align="right">Viewer: <a href="view/index.html">view/index.html</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Config file: <a href="view/config/ews_config.xml">view/config/ews_config.xml</a></td>
+</tr></table>
 <p>
 WMS addresses are:
 <ul>

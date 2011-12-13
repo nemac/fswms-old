@@ -20,3 +20,8 @@ VIEWER_LINK_TARGET_DIR = "linkdir/viewer"
 # The directory in which to look for tif files to create the layers in the WMS
 # (this should normally just be set to VIEWER_LINK_TARGET_DIR from above):
 LAYER_DATA_DIR  = VIEWER_LINK_TARGET_DIR
+
+# The URL (complete with "http://" prefix) of the directory where the viewer
+# is deployed:
+#VIEWER_DEPLOY_DIR_URL = "http://ews.forestthreats.org/GIS"
+VIEWER_DEPLOY_DIR_URL = "http://dev.nemac.org/~mbp/fswms/html/view"
