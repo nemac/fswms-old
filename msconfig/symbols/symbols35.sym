@@ -176,3 +176,30 @@ POINTS
 1 1
 END
 END 
+
+#14
+SYMBOL
+NAME 'states'
+TYPE Vector 
+FILLED FALSE
+POINTS
+0 0
+END
+END
+
+#15
+SYMBOL
+NAME 'hatchsymbol'
+TYPE hatch
+END
+END
+
+#16
+SYMBOL
+NAME "in_hatch"
+TYPE PIXMAP
+IMAGE "schraffur.png"
+TRANSPARENT 2
+END
+END
+ 
