@@ -18,3 +18,51 @@
     Allow from all
     SetHandler cgi-script
 </Files>
+<Files "activefire">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "modisndvi">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ewswcs">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "lucky">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "burnscar">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ewsmonthly">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "states">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ewstruecolor">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ncatest">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ews1year">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ncalegend">
+    Allow from all
+    SetHandler cgi-script
+</Files>
+<Files "ews3year">
+    Allow from all
+    SetHandler cgi-script
+</Files>
