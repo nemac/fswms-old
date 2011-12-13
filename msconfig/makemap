@@ -141,7 +141,7 @@ for tif in rfind(LAYER_DATA_DIR, '*.tif'):
 
 ######################################
 
-ARCHIVE_DIR = "/flood/fsdata/efetac_nasa/ews"
+ARCHIVE_DIR = DATA_DIR + "/efetac_nasa/ews"
 for tif in sorted([file for file in os.listdir(ARCHIVE_DIR) if file.endswith(".tif")], reverse=False):
     try:
         tif = re.sub('^' + ARCHIVE_DIR + '/', '', tif)
