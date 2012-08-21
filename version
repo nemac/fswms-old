@@ -4,7 +4,18 @@
 # This script simply prints out the version name and number of this copy of fswms
 #
 
-import re
+import re, os, subprocess, sys
+
+if (os.path.exists(".git")):
+    # if the .git dir exists, assume this copy of fswms came from git instead of svn
+    line = subprocess.Popen(['git', 'log', '-1', '--pretty=format:"%h %ad | %s%d [%an]"', '--date=short'],
+                            stdout=subprocess.PIPE).communicate()[0]
+    match = re.search(r'create tags/(fswms-\S+) ', line)
+    if (match):
+        print match.group(1)
+    else:
+        print "unknown"
+    sys.exit(0)
 
 #
 # Subversion will modify the following line automatically so that it gives the full
