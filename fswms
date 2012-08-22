@@ -5,16 +5,6 @@ import re, os, sys, subprocess
 os.environ['PYTHONPATH'] = '/usr/local/lib64/python2.6/site-packages'
 
 #
-# The deployment directory, where the production version of fswms is deployed:
-#
-DEPLOY_DIR   = "/var/fswms.nemac.org"
-
-#
-# The URL of the svn repository root for fswms:
-#
-SVN_ROOT     = "svn+ssh://svn.nemac.org/usr/local/svn-repos/fswms"
-
-#
 # KEEPERS is a list of files/directories in a deployed copy of fswms
 # that should be preserved when a new copy is deployed on top of it.
 # The deploying process will remove all current files and directories
@@ -31,6 +21,19 @@ DIRS_TO_ENSURE = [
    {'dir':'html/tmp',  'perms':'a+rwx'},
    {'dir':'logs',      'perms':'a+rwx'}
 ]
+
+    
+#
+# The deployment directory, where the production version of fswms is deployed:
+#
+def get_deploy_dir():
+    if os.environ['FSWMS_DEPLOY_DIR'] != "":
+        return os.environ['FSWMS_DEPLOY_DIR']
+    if os.path.exists("/var/fswms.nemac.org"):
+        return "/var/fswms.nemac.org"
+    print "Cannot determine deploy directory path; set the FSWMS_DEPOLOY_DIR environment variable"
+    sys.exit(-1)
+
 
 def compare_versions(a,b):
     try:
@@ -55,7 +58,7 @@ def compare_versions(a,b):
     return 0
 
 def version_list():
-    return sorted([re.sub(r'^fswms-(.*)/$',r'\1',x) for x in subprocess.Popen(['svn', 'list', SVN_ROOT + '/tags'], stdout=subprocess.PIPE).communicate()[0].split('\n') if x != ''], cmp=compare_versions)
+    return sorted([re.sub(r'^fswms-(.*)$',r'\1',x) for x in subprocess.Popen(['git', 'tag'], stdout=subprocess.PIPE).communicate()[0].split('\n') if x != ''], cmp=compare_versions)
 
 def version_exists(version):
     for v in version_list():
@@ -67,12 +70,12 @@ def listfiles(dir):
    # Assuming that dir is a fswms directory, return a list of the
    # files (files only --- not directories) it contains, filterd to
    # include only the files that should be included in a deployment.
-   # This omits certain files, such as any files in a subversion
-   # (.svn) subdirectory, emacs backup (*~) files, and this fswms
+   # This omits certain files, such as any files in a .git or .svn
+   # subdirectory, emacs backup (*~) files, and this fswms
    # script.
    files = [re.sub(r'^'+dir+'/', '', f)
             for f in subprocess.Popen(['find', dir, '-type', 'f', '-print'], stdout=subprocess.PIPE).communicate()[0].split('\n')
-            if re.search('.svn', f) == None]
+            if (re.search('.svn', f) == None) and (re.search('.git', f) == None)]
    files = [f for f in files
             if (
                 (re.search(r'~$',f) == None)
@@ -217,24 +220,24 @@ except:
     usage()
 
 if command == "list":
-    print ("The versions of fswms currently defined in the subversion repository are: %s" % ", ".join(version_list()))
+    print ("The currently tagged versions of fswms are: %s" % ", ".join(version_list()))
            
 elif command == "create":
     version = sys.argv[2]
     if version_exists(version):
-        print "Error: version %s already exists in the subversion repository" % version
+        print "Error: There is already a tagged version '%s'" % version
         exit(-1)
     tag = "fswms-%s" % version
-    os.system("svn --quiet cp -m 'create tags/%s' %s/trunk %s/tags/%s" % (tag,SVN_ROOT,SVN_ROOT,tag))
-    print "created %s " % tag
+    os.system("git tag -a -m 'create tags/%s' %s" % (tag,tag))
+    print "created %s " % (tag)
 
 elif command == "delete":
     version = sys.argv[2]
     if not version_exists(version):
-        print "Error: version %s does not exist in the subversion repository" % version
+        print "Error: There is no version tagged '%s'" % version
         exit(-1)
     tag = "fswms-%s" % version
-    os.system("svn --quiet -m 'remove tags/%s' rm %s/tags/%s" % (tag,SVN_ROOT,tag))
+    os.system("git tag -d %s" % tag)
     print "deleted %s " % tag
 
 elif command == "deploy-dir":
@@ -246,9 +249,10 @@ elif command == "deploy-dir":
     os.chdir(cwd)
 
 elif command == "deploy":
+    DEPLOY_DIR = get_deploy_dir()
     version = sys.argv[2]
     if not version_exists(version):
-        print "Error: version %s does not exist in the subversion repository" % version
+        print "Error: There is no version '%s'" % version
         exit(-1)
     if compare_versions(version, "1.11") < 0 and os.environ['HOSTNAME'] == "rain":
         print "Versions prior to fswms-1.11 cannot be deployed on server 'rain'"
@@ -257,12 +261,19 @@ elif command == "deploy":
     os.system("/bin/rm -rf .stage")
     os.mkdir(".stage")
     print "getting a copy of %s..." % tag
-    os.system("cd .stage ; svn --quiet co %s/tags/%s" % (SVN_ROOT,tag))
+    os.system("git archive --format=tar %s | (cd .stage ; tar xf -)" % (tag))
+    fp = open(".stage/version", "w")
+    fp.write("#! /usr/bin/python\n")
+    fp.write("\n")
+    fp.write("print \"%s\"\n" % tag)
+    fp.close()
+    os.system("chmod +x .stage/version")
     print "deploying %s to %s..." % (tag,DEPLOY_DIR)
     if os.environ['HOSTNAME'] == "rain":
         os.system("sudo ./fswms deploy-dir %s %s" % (DEPLOY_DIR,tag))
     else:
         os.system("./fswms deploy-dir %s %s" % (DEPLOY_DIR,tag))
+    exit(0)
     print "running %s/msconfig/fscron..." % DEPLOY_DIR
     if os.environ['HOSTNAME'] == "rain":
         os.system("cd %s/msconfig ; sudo su fswms ./fscron" % DEPLOY_DIR)
